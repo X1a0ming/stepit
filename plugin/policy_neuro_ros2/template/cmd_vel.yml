@@ -1,0 +1,20 @@
+velocity_scale_factor: [ 1.0, 0.5, 1.0 ]  # Tuple[Float, Float, Float], scaling factors of cmd_vel
+velocity_turbo_factor: [ 1.0, 1.0, 1.0 ]  # Tuple[Float, Float, Float], turbo scaling factors of cmd_vel
+velocity_deadzone: 0.1                    # Float, if each dimension of cmd_vel is below this value, it will be set to zero
+smoothing: false                          # Bool, whether to apply smoothing to cmd_vel
+max_acceleration: [ 5.0, 2.5, 10.0 ]      # Tuple[Float, Float, Float], maximum acceleration for cmd_vel smoothing
+stall_mode: true                          # Bool, whether to enable stall mode
+move_mode: true                           # Bool, whether to enable move mode
+
+##########################
+# ROS2-specific settings #
+##########################
+cmd_vel_subscriber:                       # [Optional] ROS2 subscriber settings for velocity command
+  topic: "cmd_vel"                        # [Optional] String, the ROS2 topic to subscribe for roll commands
+  topic_type: "geometry_msgs/msg/Twist"   # [Optional] String, the ROS2 message type for roll commands
+  qos:                                    # [Optional] QoS settings for the ROS2 subscriber
+    reliability: "best_effort"            # [Optional] Literal["reliable", "best_effort", "system_default", "best_available"], the reliability policy
+    durability: "volatile"                # [Optional] Literal["volatile", "transient_local", "system_default", "best_available"], the durability policy
+    history: "keep_last"                  # [Optional] Union[Int, Literal["keep_last", "keep_all", "system_default"]], the history policy
+  timeout_threshold: 0.1                  # [Optional] Float, seconds before the command is considered stale
+  default_enabled: false                  # [Optional] Bool, whether to enable the ROS2 subscriber on policy starting

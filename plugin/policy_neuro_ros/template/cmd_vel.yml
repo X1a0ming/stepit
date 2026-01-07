@@ -1,0 +1,20 @@
+velocity_scale_factor: [ 1.0, 0.5, 1.0 ]  # Tuple[Float, Float, Float], scaling factors of cmd_vel
+velocity_turbo_factor: [ 1.0, 1.0, 1.0 ]  # Tuple[Float, Float, Float], turbo scaling factors of cmd_vel
+velocity_deadzone: 0.1                    # Float, if each dimension of cmd_vel is below this value, it will be set to zero
+smoothing: false                          # Bool, whether to apply smoothing to cmd_vel
+max_acceleration:  [ 5.0, 2.5, 10.0 ]     # Tuple[Float, Float, Float], maximum acceleration for cmd_vel smoothing
+stall_mode: true                          # Bool, whether to enable stall mode
+move_mode: true                           # Bool, whether to enable move mode
+
+#########################
+# ROS-specific settings #
+#########################
+
+cmd_vel_subscriber:                # settings for the roll command subscriber
+  topic: "cmd_vel"                 # [Optional] String, the ROS topic to subscribe for roll commands
+  queue_size: 1                    # [Optional] Int, the size of the subscriber queue
+  transport_hints:                 # settings for ROS transport hints
+    type: "tcpnodelay"             # [Optional] Literal["reliable", "unreliable", "tcp", "udp", "tcpnodelay"],
+                                   #   the type of transport hint
+  timeout_threshold: 0.1           # [Optional] Float, timeout threshold in seconds to consider the command stale
+  default_enabled: false           # [Optional] Bool, whether to enable the ROS subscriber on policy starting

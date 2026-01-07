@@ -1,0 +1,13 @@
+# Map of fields to subscribe and provide to the policy
+
+example_field_0:             # String, field name
+  topic: "/example_field_0"  # String, ROS topic to subscribe
+  size: 3                    # Int, field dimension
+
+  queue_size: 1              # [Optional] Int, the size of the subscriber queue      
+  timeout_threshold: 0.0     # [Optional] Float, seconds before data is considered stale
+                             #   If a field is not received within the timeout, the policy will exit.
+                             #   If not specified or not larger than 0, no timeout is applied.
+  transport_hints:           # settings for ROS transport hints      
+    type: "tcpnodelay"       # [Optional] Literal["reliable", "unreliable", "tcp", "udp", "tcpnodelay"],
+                             #   the type of transport hint      

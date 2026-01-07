@@ -1,0 +1,10 @@
+# Mappings from target field names to their components
+
+target_field_name1:
+  - component_field_1
+  - component_field_2
+
+target_field_name2:
+  - component_field_3
+  - component_field_4
+  - component_field_5

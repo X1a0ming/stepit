@@ -1,0 +1,147 @@
+#ifndef STEPIT_ROBOT_H_
+#define STEPIT_ROBOT_H_
+
+#include <array>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include <stepit/macro.h>
+#include <stepit/registry.h>
+
+namespace stepit {
+/**
+ * @brief Represents the feedback state of a single motor.
+ */
+struct MotorState {
+  /* Current joint angle (unit: rad) */
+  float q;
+  /* Current joint velocity (unit: rad/s) */
+  float dq;
+  /* Current estimated output torque (unit: N⋅m) */
+  float tor;
+};
+
+/**
+ * @class LowState
+ * @brief Represents the whole-body low-level state feedback from the robot.
+ */
+struct LowState {
+  LowState() = default;
+  LowState(std::size_t dof, std::size_t num_legs) : motor_state(dof), foot_force(num_legs) {}
+
+  struct IMU {
+    /* Quaternion representation of orientation in (w,x,y,z) format */
+    std::array<float, 4> quaternion{};
+    /* Angular velocity (unit: rad/s) */
+    std::array<float, 3> gyroscope{};
+    /* Linear acceleration (unit: m/(s^2)) */
+    std::array<float, 3> accelerometer{};
+    /* Euler angles (roll, pitch, yaw) (unit: rad) */
+    std::array<float, 3> rpy{};
+  } imu;
+
+  /* Whole-body joint states */
+  std::vector<MotorState> motor_state;
+  /* Force sensed at each foot */
+  std::vector<float> foot_force;
+  /* System tick count */
+  uint32_t tick{};
+};
+
+/**
+ * @class MotorCmd
+ * @brief Represents the control command for a single motor.
+ */
+struct MotorCmd {
+  /* Target joint angle (unit: rad) */
+  float q;
+  /* Target joint velocity (unit: rad/s) */
+  float dq;
+  /* Target feedforward torque (unit: N⋅m) */
+  float tor;
+  /* Proportional gain (unit: N⋅m/rad ) */
+  float Kp;
+  /* Derivative gain (unit: N⋅m/(rad/s) ) */
+  float Kd;
+};
+
+/**
+ * @brief Represents the whole-body low-level command sent to the robot.
+ */
+using LowCmd = std::vector<MotorCmd>;
+
+struct RobotSpec {
+  RobotSpec() = default;
+  explicit RobotSpec(const YAML::Node &config);
+
+  /* Name of the robot. */
+  std::string robot_name;
+  /* Names of the joints. */
+  std::vector<std::string> joint_names;
+  /* Names of the end effectors (feet). */
+  std::vector<std::string> foot_names;
+  /* Degrees of freedom of the robot. */
+  std::size_t dof;
+  /* Proportional gain used for following fixed trajectories. */
+  std::vector<float> kp;
+  /* Derivative gain used for following fixed trajectories. */
+  std::vector<float> kd;
+  /* Maximum joint position deviation allowed when following fixed trajectories (unit: rad). */
+  float stuck_threshold{deg2rad(20.)};
+
+  struct Safety {
+    /* Whether to freeze the robot when safety violations are detected. */
+    bool enabled{true};
+    /* Maximum allowable roll angle (unit: rad). */
+    float roll{M_PIf / 2};
+    /* Maximum allowable pitch angle (unit: rad). */
+    float pitch{M_PIf / 2};
+  } safety;
+
+  float resetting_time{0.8};
+  float standing_up_time{1.2};
+  float lying_down_time{1.0};
+  float returning_to_standing_time{1.0};
+  std::vector<float> standing_cfg;
+  std::vector<float> lying_cfg;
+  /* Whether the robot automatically enter damped mode when low commands are not published. */
+  bool auto_damped_mode{true};
+  /* Damping coefficient used in damped mode, only has effect when auto_damped_mode is false. */
+  float kd_damped_mode{5.};
+};
+
+class RobotApi {
+ public:
+  using Ptr = std::unique_ptr<RobotApi>;
+  using Reg = RegistrySingleton<RobotApi>;
+
+  explicit RobotApi(const std::string &name)
+      : config_(yml::loadFile(fmt::format("{}/robot/{}.yml", kConfigDir, name))), spec_(config_) {}
+  virtual ~RobotApi() = default;
+
+  virtual void getControl(bool enable) = 0;
+  virtual void setSend(LowCmd &)       = 0;
+  virtual void getRecv(LowState &)     = 0;
+  virtual void send()                  = 0;
+  virtual void recv()                  = 0;
+
+  const RobotSpec &getSpec() const { return spec_; }
+  virtual std::size_t getDoF() const      = 0;
+  virtual std::size_t getNumLegs() const  = 0;
+  virtual std::size_t getCommFreq() const = 0;
+
+ protected:
+  YAML::Node config_;
+  RobotSpec spec_;
+};
+
+using RobotApiPtr = RobotApi::Ptr;
+using RobotApiReg = RobotApi::Reg;
+extern template class RegistrySingleton<RobotApi>;
+}  // namespace stepit
+
+#define STEPIT_REGISTER_ROBOTAPI(name, priority, factory) \
+  static ::stepit::RobotApiReg::Registration _robotapi_##name##_registration(#name, priority, factory)
+
+#endif

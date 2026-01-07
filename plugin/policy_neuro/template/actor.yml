@@ -1,0 +1,21 @@
+input_field:                        # Dict[List[Dict]], mapping from the input name of the neural network to it component fields
+  observation:                      # Assuming the input name of the neural network is "observation"
+  - { name: cmd_vel,    size: 3  }  # For each field, specify the name and size (dimension)
+  - { name: cmd_stall,  size: 1  }  # The input fields will be concatenated in the given order
+  - { name: cmd_height, size: 1  }  # If the neural network expects a single input, a List[Dict] is also allowed
+  - { name: cmd_pitch,  size: 1  }
+  - { name: action_p1,  size: 12 }
+  - { name: gravity,    size: 3  }
+  - { name: joint_pos,  size: 12 }
+  - { name: joint_vel,  size: 12 }
+  - { name: ang_vel,    size: 3  }
+
+output_field:                       # Dict[List[Dict]], mapping from the output name of the neural network to it component fields
+- { name: action, size: 12}         # The format is similar to "input_field"
+
+assert_all_finite: true             # Bool, whether to assert all finite values in inputs
+run:                                # [Optional] run configuration
+  task: my_task                     # String, name of the task
+  name: my_name                     # String, name of the run
+  time: 2026-01-01-00-00-00         # String, start time of the run
+  iter: 10000                       # Int, number of iterations

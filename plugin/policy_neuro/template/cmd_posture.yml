@@ -1,0 +1,5 @@
+roll_scale_factor: 0.523599   # [Optional] Float, the scale factor for roll command (in radians)
+pitch_scale_factor: 0.523599  # [Optional] Float, the scale factor for pitch command (in radians)
+default_cmd_height: 1.0       # [Optional] Float, the default height command
+height_scale_factor: 0.05     # [Optional] Float, the scale factor of adjustment for height command
+height_range: [ 0.6, 1.2 ]    # [Optional] Float, the range of height command

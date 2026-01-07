@@ -1,0 +1,54 @@
+# Option 1, specify dimension, grid_size and x_major
+dimension: [ 17, 13 ]      # Tuple[Int, Int], the number of cells in each dimension
+grid_size: [ 0.1, 0.1 ]    # Tuple[Float, Float], the size of each cell in meters
+x_major: true              # [Optional] Bool, whether the grid is x-major
+
+# Option 2, specify sample coordinates
+sample_coords:            # List[Tuple[Float, Float]], sample coordinates to determine extent
+  - [ -0.1, 0.0 ]
+  - [ 0.0, 0.0 ]
+  - [ 0.1, 0.0 ]
+
+
+default_uncertainty: 0.05  # [Optional] Float, default uncertainty value for each cell
+max_uncertainty: 0.5       # [Optional] Float, maximum uncertainty value for each cell
+
+#########################
+# ROS-specific settings #
+#########################
+
+# Subscribers
+grid_map_subscriber:
+  topic: "/elevation_mapping/elevation_map"  # [Optional] String, the ROS topic to subscribe for grid map
+  queue_size: 1                              # [Optional] Int, the subscriber queue size
+  transport_hints:                           # [Optional] transport hints for the subscriber
+    type: "tcpnodelay"                       # [Optional] Literal["reliable", "unreliable", "tcp", "udp", "tcpnodelay"],
+                                             #   the type of transport hint      
+  timeout_threshold: 0.5                     # [Optional] Float; seconds before the message is considered stale
+  default_enabled: false                     # [Optional] Bool, whether to enable the subscriber on policy starting
+
+localization_subscriber:                     # Similar structure as grid_map_subscriber
+  topic: "/odometry"
+  queue_size: 1
+  transport_hints:
+    type: "tcpnodelay"
+  timeout_threshold: 0.1
+
+# Grid map options
+elevation_layer: "elevation"                 # [Optional] String, the layer name for elevation
+uncertainty_layer: "uncertainty_range"       # [Optional] String, the layer name for uncertainty; empty string to disable
+elevation_interpolation_method: "linear"     # Literal["nearest", "linear", "cubic_convolution", "cubic"],
+                                             #   the interpolation method for elevation layer
+uncertainty_interpolation_method: "linear"   # Literal["nearest", "linear", "cubic_convolution", "cubic"],
+                                             #   the interpolation method for uncertainty layer
+
+elevation_zero_mean: true                    # [Optional] Bool, subtract mean elevation from samples
+uncertainty_squared: false                   # [Optional] Bool, true if layer is variance; false if already standard deviation
+uncertainty_scaling: 0.25                    # [Optional] Float, scales standard deviation to field expectation
+
+# Output control
+height_sample_publisher:                     # Height sample publisher configuration
+  enabled: false                             # [Optional] Bool, whether to enable height sample publishing
+  topic: "heightmap_samples"                 # [Optional] String, the topic to publish
+  queue_size: 1                              # [Optional] Int, the publisher queue size
+  latch: false                               # [Optional] Bool, whether to publish in latching mode

@@ -1,0 +1,12 @@
+# Map of fields to subscribe and provide to the policy
+
+example_field_0:                # String, field name
+  topic: "/example_field_0"     # String, ROS2 topic to subscribe
+  size: 3                       # Int, field dimension
+  timeout_threshold: 0.0        # [Optional] Float, seconds before data is considered stale
+                                #   If a field is not received within the timeout, the policy will exit.
+                                #   If not specified or not larger than 0, no timeout is applied.
+  qos:                          # [Optional] QoS settings for the ROS2 subscriber
+    reliability: "best_effort"  # [Optional] Literal["reliable", "best_effort", "system_default", "best_available"], the reliability policy
+    durability: "volatile"      # [Optional] Literal["volatile", "transient_local", "system_default", "best_available"], the durability policy
+    history: "keep_last"        # [Optional] Union[Int, Literal["keep_last", "keep_all", "system_default"]], the history policy

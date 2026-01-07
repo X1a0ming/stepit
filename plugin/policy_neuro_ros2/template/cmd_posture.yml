@@ -1,0 +1,39 @@
+roll_scale_factor: 0.523599   # [Optional] Float, the scale factor for roll command (in radians)
+pitch_scale_factor: 0.523599  # [Optional] Float, the scale factor for pitch command (in radians)
+default_cmd_height: 1.0       # [Optional] Float, the default height command
+height_scale_factor: 0.05     # [Optional] Float, the scale factor of adjustment for height command
+height_range: [ 0.6, 1.2 ]    # [Optional] Float, the range of height command
+
+##########################
+# ROS2-specific settings #
+##########################
+
+cmd_roll_subscriber:                     # [Optional] ROS2 subscriber settings for roll command
+  topic: "cmd_vel"                       # [Optional] String, the ROS2 topic to subscribe for roll commands
+  topic_type: "geometry_msgs/msg/Twist"  # [Optional] String, the ROS2 message type for roll commands
+  qos:                                   # [Optional] QoS settings for the ROS2 subscriber
+    reliability: "best_effort"           # [Optional] Literal["reliable", "best_effort", "system_default", "best_available"], the reliability policy
+    durability: "volatile"               # [Optional] Literal["volatile", "transient_local", "system_default", "best_available"], the durability policy
+    history: "keep_last"                 # [Optional] Union[Int, Literal["keep_last", "keep_all", "system_default"]], the history policy
+  timeout_threshold: 0.1                 # [Optional] Float, seconds before the command is considered stale
+  default_enabled: false                 # [Optional] Bool, whether to enable the ROS2 subscriber on policy starting
+
+cmd_pitch_subscriber:                    # Similar settings for pitch command
+  topic: "cmd_vel"
+  topic_type: "geometry_msgs/msg/Twist"
+  qos:
+    reliability: "best_effort"
+    durability: "volatile"
+    history: "keep_last"
+  timeout_threshold: 0.1
+  default_enabled: false
+
+cmd_height_subscriber:                   # Similar settings for height command
+  topic: "cmd_vel"
+  topic_type: "geometry_msgs/msg/Twist"
+  qos:
+    reliability: "best_effort"
+    durability: "volatile"
+    history: "keep_last"
+  timeout_threshold: 0.1
+  default_enabled: false

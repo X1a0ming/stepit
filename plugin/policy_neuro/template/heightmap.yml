@@ -1,0 +1,14 @@
+# Option 1, specify dimension, grid_size and x_major
+dimension: [ 17, 13 ]      # Tuple[Int, Int], the number of cells in each dimension
+grid_size: [ 0.1, 0.1 ]    # Tuple[Float, Float], the size of each cell in meters
+x_major: true              # [Optional] Bool, whether the grid is x-major
+
+# Option 2, specify sample coordinates
+sample_coords:            # List[Tuple[Float, Float]], sample coordinates to determine extent
+  - [ -0.1, 0.0 ]
+  - [ 0.0, 0.0 ]
+  - [ 0.1, 0.0 ]
+
+
+default_uncertainty: 0.05  # [Optional] Float, default uncertainty value for each cell
+max_uncertainty: 0.5       # [Optional] Float, maximum uncertainty value for each cell

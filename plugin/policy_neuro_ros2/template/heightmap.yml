@@ -1,0 +1,57 @@
+# Option 1, specify dimension, grid_size and x_major
+dimension: [ 17, 13 ]      # Tuple[Int, Int], the number of cells in each dimension
+grid_size: [ 0.1, 0.1 ]    # Tuple[Float, Float], the size of each cell in meters
+x_major: true              # [Optional] Bool, whether the grid is x-major
+
+# Option 2, specify sample coordinates
+sample_coords:            # List[Tuple[Float, Float]], sample coordinates to determine extent
+  - [ -0.1, 0.0 ]
+  - [ 0.0, 0.0 ]
+  - [ 0.1, 0.0 ]
+
+
+default_uncertainty: 0.05  # [Optional] Float, default uncertainty value for each cell
+max_uncertainty: 0.5       # [Optional] Float, maximum uncertainty value for each cell
+
+#########################
+# ROS-specific settings #
+#########################
+
+grid_map_subscriber:                         # [Optional] ROS2 subscriber settings for grid_map
+  topic: "/elevation_mapping/elevation_map"  # [Optional] String, the ROS2 topic to subscribe grid_map message
+  qos:                                       # [Optional] QoS settings for the ROS2 subscriber
+    reliability: "best_effort"               # [Optional] Literal["reliable", "best_effort", "system_default", "best_available"], the reliability policy
+    durability: "volatile"                   # [Optional] Literal["volatile", "transient_local", "system_default", "best_available"], the durability policy
+    history: "keep_last"                     # [Optional] Union[Int, Literal["keep_last", "keep_all", "system_default"]], the history policy
+  timeout_threshold: 0.5                     # [Optional] Float, seconds before the message is considered stale
+  default_enabled: false                     # [Optional] Bool, whether to enable the ROS2 subscriber on policy starting
+
+localization_subscriber:                     # similar settings for localization subscriber
+  topic: "/odometry"
+  topic_type: "nav_msgs/msg/Odometry"
+  qos:
+    reliability: "best_effort"
+    durability: "volatile"
+    history: "keep_last"
+  timeout_threshold: 0.1
+
+# Grid map options
+elevation_layer: "elevation"                 # [Optional] String, the layer name for elevation
+uncertainty_layer: "uncertainty_range"       # [Optional] String, the layer name for uncertainty; empty string to disable
+elevation_interpolation_method: "linear"     # Literal["nearest", "linear", "cubic_convolution", "cubic"],
+                                             #   the interpolation method for elevation layer
+uncertainty_interpolation_method: "linear"   # Literal["nearest", "linear", "cubic_convolution", "cubic"],
+                                             #   the interpolation method for uncertainty layer
+
+elevation_zero_mean: true                    # [Optional] Bool, subtract mean elevation from samples
+uncertainty_squared: false                   # [Optional] Bool, true if layer is variance; false if already standard deviation
+uncertainty_scaling: 0.25                    # [Optional] Float, scales standard deviation to field expectation
+
+# Output control
+height_sample_publisher:                     # Height sample publisher configuration
+  enabled: false                             # [Optional] Bool, whether to enable height sample publishing
+  topic: "heightmap_samples"                 # [Optional] String, the topic to publish
+  qos:                                       # [Optional] QoS settings for the ROS2 publisher
+    reliability: "best_effort"               # [Optional] Literal["reliable", "best_effort", "system_default", "best_available"], the reliability policy
+    durability: "volatile"                   # [Optional] Literal["volatile", "transient_local", "system_default", "best_available"], the durability policy
+    history: "keep_last"                     # [Optional] Union[Int, Literal["keep_last", "keep_all", "system_default"]], the history policy

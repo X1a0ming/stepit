@@ -1,0 +1,35 @@
+name: "lite3"
+joint_names:
+  - "FL_HipX"
+  - "FL_HipY"
+  - "FL_Knee"
+  - "FR_HipX"
+  - "FR_HipY"
+  - "FR_Knee"
+  - "HL_HipX"
+  - "HL_HipY"
+  - "HL_Knee"
+  - "HR_HipX"
+  - "HR_HipY"
+  - "HR_Knee"
+foot_names:
+  - "FL_FOOT"
+  - "FR_FOOT"
+  - "HL_FOOT"
+  - "HR_FOOT"
+kp: 60.0
+kd: 1.0
+standing_cfg: [
+  0.0, -0.773, 1.501,
+  0.0, -0.773, 1.501,
+  0.0, -0.773, 1.501,
+  0.0, -0.773, 1.501,
+]
+lying_cfg: [
+  0.0, -1.221, 2.618,
+  0.0, -1.221, 2.618,
+  0.0, -1.221, 2.618,
+  0.0, -1.221, 2.618,
+]
+auto_damped_mode: false
+kd_damped_mode: 5.0

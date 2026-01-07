@@ -1,0 +1,92 @@
+#ifndef STEPIT_NEURO_POLICY_CMD_POSTURE_SOURCE_H_
+#define STEPIT_NEURO_POLICY_CMD_POSTURE_SOURCE_H_
+
+#include <stepit/policy_neuro/cmd_vel_source.h>
+#include <stepit/policy_neuro/field.h>
+
+namespace stepit {
+namespace neuro_policy {
+class CmdRollSource : public FieldSource {
+ public:
+  CmdRollSource(const PolicySpec &robot_spec, const std::string &home_dir);
+  bool reset() override;
+  bool update(const LowState &low_state, ControlRequests &requests, FieldMap &result) override;
+  void exit() override;
+
+  enum class Action : std::uint8_t {
+    kSetRoll,
+    kSetRollUnscaled,
+    kInvalid = 255,
+  };
+
+ protected:
+  static const std::map<std::string, Action> kActionMap;
+  virtual void handleControlRequest(ControlRequest request);
+
+  YAML::Node config_;
+  FieldId cmd_roll_id_{};
+  std::vector<JoystickControl::Registration> js_rules_;
+
+  float roll_scale_factor_{M_PI / 6};
+
+  float cmd_roll_{};
+};
+
+class CmdPitchSource : public FieldSource {
+ public:
+  CmdPitchSource(const PolicySpec &robot_spec, const std::string &home_dir);
+  bool reset() override;
+  bool update(const LowState &low_state, ControlRequests &requests, FieldMap &result) override;
+  void exit() override;
+
+  enum class Action : std::uint8_t {
+    kSetPitch,
+    kSetPitchUnscaled,
+    kInvalid = 255,
+  };
+
+ protected:
+  static const std::map<std::string, Action> kActionMap;
+  virtual void handleControlRequest(ControlRequest request);
+
+  YAML::Node config_;
+  FieldId cmd_pitch_id_{};
+  std::vector<JoystickControl::Registration> js_rules_;
+
+  float pitch_scale_factor_{M_PI / 6};
+
+  float cmd_pitch_{};
+};
+
+class CmdHeightSource : public FieldSource {
+ public:
+  CmdHeightSource(const PolicySpec &robot_spec, const std::string &home_dir);
+  bool reset() override;
+  bool update(const LowState &low_state, ControlRequests &requests, FieldMap &result) override;
+  void exit() override;
+
+  enum class Action : std::uint8_t {
+    kSetHeight,
+    kIncreaseHeight,
+    kDecreaseHeight,
+    kInvalid = 255,
+  };
+
+ protected:
+  static const std::map<std::string, Action> kActionMap;
+  virtual void handleControlRequest(ControlRequest request);
+
+  YAML::Node config_;
+  FieldId cmd_height_id_{};
+  std::vector<JoystickControl::Registration> js_rules_;
+
+  float default_cmd_height_{1.0F};
+  float height_scale_factor_{0.05};
+  range_t<float> height_range_{0.6, 1.2};
+
+  float cmd_height_{};
+};
+}  // namespace neuro_policy
+}  // namespace stepit
+
+#endif  // STEPIT_NEURO_POLICY_CMD_POSTURE_SOURCE_H_

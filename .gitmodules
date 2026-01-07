@@ -1,0 +1,30 @@
+[submodule "extern/llu"]
+	path = extern/llu
+	url = https://github.com/chengruiz/llu.git
+[submodule "extern/joystick_sdk/libgamepad"]
+	path = extern/joystick_sdk/libgamepad
+	url = https://github.com/univrsal/libgamepad.git
+[submodule "extern/joystick_sdk/udp-gamepad"]
+	path = extern/joystick_sdk/udp-gamepad
+	url = https://github.com/chengruiz/udp-gamepad.git
+[submodule "extern/robot_sdk/deeprobotics_lite3_sdk"]
+	path = extern/robot_sdk/deeprobotics_lite3_sdk
+	url = https://github.com/DeepRoboticsLab/Lite3_MotionSDK.git
+[submodule "extern/robot_sdk/deeprobotics_x30_sdk"]
+	path = extern/robot_sdk/deeprobotics_x30_sdk
+	url = https://github.com/chengruiz/deeprobotics_x30_legacy_sdk.git
+[submodule "extern/robot_sdk/unitree_go1_sdk"]
+	path = extern/robot_sdk/unitree_go1_sdk
+	url = https://github.com/unitreerobotics/unitree_legged_sdk.git
+	branch = go1
+[submodule "extern/robot_sdk/unitree_b1_sdk"]
+	path = extern/robot_sdk/unitree_b1_sdk
+	url = https://github.com/unitreerobotics/unitree_legged_sdk.git
+	branch = B1
+[submodule "extern/robot_sdk/unitree_aliengo_sdk"]
+	path = extern/robot_sdk/unitree_aliengo_sdk
+	url = https://github.com/unitreerobotics/unitree_legged_sdk.git
+	branch = Aliengo
+[submodule "extern/robot_sdk/unitree_sdk2"]
+	path = extern/robot_sdk/unitree_sdk2
+	url = https://github.com/unitreerobotics/unitree_sdk2.git

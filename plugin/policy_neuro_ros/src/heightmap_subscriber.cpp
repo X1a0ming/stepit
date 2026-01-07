@@ -1,0 +1,314 @@
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PoseWithCovariance.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <nav_msgs/Odometry.h>
+#include <sensor_msgs/point_cloud2_iterator.h>
+
+#include <stepit/policy_neuro/subscriber_action.h>
+#include <stepit/policy_neuro_ros/heightmap_subscriber.h>
+
+namespace stepit {
+namespace neuro_policy {
+grid_map::InterpolationMethods parseInterpolationMethod(const std::string &method) {
+  if (method == "nearest") return grid_map::InterpolationMethods::INTER_NEAREST;
+  if (method == "linear") return grid_map::InterpolationMethods::INTER_LINEAR;
+  if (method == "cubic_convolution") return grid_map::InterpolationMethods::INTER_CUBIC_CONVOLUTION;
+  if (method == "cubic") return grid_map::InterpolationMethods::INTER_CUBIC;
+  STEPIT_ERROR("Unsupported interpolation method '{}'. ", method);
+}
+
+HeightmapSubscriber::HeightmapSubscriber(const PolicySpec &policy_spec, const std::string &home_dir)
+    : DummyHeightmapSource(policy_spec, home_dir) {
+  YAML::Node map_sub_cfg = config_["grid_map_subscriber"];
+  yml::setIf(config_, "timeout_threshold", map_timeout_threshold_);
+  yml::setIf(config_, "default_enabled", default_subscriber_enabled_);
+  map_sub_ = makeSubscriber(map_sub_cfg, &HeightmapSubscriber::gridMapCallback, this,
+                            "/elevation_mapping/elevation_map");
+
+  YAML::Node loc_sub_cfg = config_["localization_subscriber"];
+  yml::setIf(config_, "timeout_threshold", loc_timeout_threshold_);
+  loc_sub_ = makeSubscriber(loc_sub_cfg, &HeightmapSubscriber::localizationCallback, this, "/odometry");
+
+  yml::setIf(config_, "elevation_layer", elevation_layer_);
+  yml::setIf(config_, "uncertainty_layer", uncertainty_layer_);
+  std::string elevation_interp_method{"linear"}, uncertainty_interp_method{"linear"};
+  yml::setIf(config_, "elevation_interpolation_method", elevation_interp_method);
+  yml::setIf(config_, "uncertainty_interpolation_method", uncertainty_interp_method);
+  elevation_interp_method_   = parseInterpolationMethod(elevation_interp_method);
+  uncertainty_interp_method_ = parseInterpolationMethod(uncertainty_interp_method);
+  if (uncertainty_layer_ == "variance") {  // Default values for variance layer
+    uncertainty_squared_ = true;
+    uncertainty_scaling_ = 1.0;
+  } else {  // Default values for uncertainty_range layer
+    uncertainty_squared_ = false;
+    uncertainty_scaling_ = 0.25F;
+  }
+  yml::setIf(config_, "elevation_zero_mean", elevation_zero_mean_);
+  yml::setIf(config_, "uncertainty_squared", uncertainty_squared_);
+  yml::setIf(config_, "uncertainty_scaling", uncertainty_scaling_);
+
+  YAML::Node sample_pub_cfg = config_["height_sample_publisher"];
+  publish_samples_          = STEPIT_VERBOSITY <= kDbug;
+  yml::setIf(sample_pub_cfg, "enabled", publish_samples_);
+  if (publish_samples_) {
+    sample_pub_              = makePublisher<sensor_msgs::PointCloud2>(sample_pub_cfg, "heightmap_samples");
+    sample_msg_.width        = sample_coords_.size();
+    sample_msg_.height       = 1;
+    sample_msg_.is_dense     = true;
+    sample_msg_.is_bigendian = false;
+    sensor_msgs::PointCloud2Modifier modifier(sample_msg_);
+    modifier.setPointCloud2Fields(4, "x", 1, sensor_msgs::PointField::FLOAT32, "y", 1, sensor_msgs::PointField::FLOAT32,
+                                  "z", 1, sensor_msgs::PointField::FLOAT32, "rgb", 1, sensor_msgs::PointField::UINT32);
+  }
+  global_sample_coords_.resize(sample_coords_.size());
+}
+
+bool HeightmapSubscriber::reset() {
+  subscriber_enabled_ = default_subscriber_enabled_;
+  map_timeout_        = false;
+  loc_timeout_        = false;
+  error_msg_.clear();
+  subscribing_status_ = publisher::StatusRegistration::make("Policy/Heightmap/Subscribing");
+  error_msg_status_   = publisher::StatusRegistration::make("Policy/Heightmap/ErrorMessage");
+  js_rules_.emplace_back([](const joystick::State &js) {
+    return js.LB().pressed and js.B().on_press ? boost::optional<std::string>("Policy/Heightmap/SwitchSubscriber")
+                                               : boost::none;
+  });
+  return true;
+}
+
+bool HeightmapSubscriber::update(const LowState &low_state, ControlRequests &requests, FieldMap &result) {
+  for (auto &&request : requests.filterByChannel("Policy/Heightmap")) {
+    handleControlRequest(std::move(request));
+  }
+
+  bool status = checkAllReady();
+  subscribing_status_->update(subscriber_enabled_);
+  error_msg_status_->update(error_msg_);
+
+  if (not status) {
+    elevation_.setZero();
+    uncertainty_.setConstant(max_uncertainty_);
+    return DummyHeightmapSource::update(low_state, requests, result);
+  }
+  {
+    std::lock_guard<std::mutex> lock(msg_mtx_);
+    Vec2f pos{loc_msg_.position.x, loc_msg_.position.y};
+    const auto &orn = loc_msg_.orientation;
+    Eigen::Rotation2Df rot(Quatf(orn.w, orn.x, orn.y, orn.z).eulerAngles().z());
+
+    for (std::size_t i{}; i < numHeightSamples(); ++i) {
+      const auto &local_coord  = sample_coords_[i];
+      Vec2f global_coord       = pos + rot * local_coord;
+      global_sample_coords_[i] = global_coord;
+      samplefromMap(global_coord.x(), global_coord.y(), elevation_[static_cast<Eigen::Index>(i)],
+                    uncertainty_[static_cast<Eigen::Index>(i)]);
+    }
+  }
+  int num_finite = 0;
+  double sum     = 0.0;
+  for (std::size_t i{}; i < numHeightSamples(); ++i) {
+    float elevation = elevation_[static_cast<Eigen::Index>(i)];
+    if (std::isfinite(elevation)) {
+      num_finite++;
+      sum += elevation;
+    }
+  }
+  float mean = num_finite ? static_cast<float>(sum / num_finite) : 0.0F;
+  for (std::size_t i{}; i < numHeightSamples(); ++i) {
+    // Fill in NaN values with mean and set uncertainty to max_uncertainty_
+    float &elevation = elevation_[static_cast<Eigen::Index>(i)];
+    if (not std::isfinite(elevation)) elevation = mean;
+  }
+  if (publish_samples_) {
+    sensor_msgs::PointCloud2Iterator<float> iter_x(sample_msg_, "x");
+    sensor_msgs::PointCloud2Iterator<float> iter_y(sample_msg_, "y");
+    sensor_msgs::PointCloud2Iterator<float> iter_z(sample_msg_, "z");
+    sensor_msgs::PointCloud2Iterator<uint32_t> iter_rgb(sample_msg_, "rgb");
+    const auto &map_pos = map_info_.pose.position;
+
+    for (std::size_t i{}; i < numHeightSamples(); ++i) {
+      const auto &coord = global_sample_coords_[i];
+
+      *iter_x    = coord.x();
+      *iter_y    = coord.y();
+      *iter_z    = elevation_[static_cast<Eigen::Index>(i)] + static_cast<float>(map_pos.z);
+      uint32_t r = std::min<uint32_t>(uncertainty_[static_cast<Eigen::Index>(i)] * 20 * 255, 255);
+      uint32_t g = 255 - r;
+      uint32_t b = 0;
+      *iter_rgb  = r << 16 | g << 8 | b;
+
+      ++iter_x;
+      ++iter_y;
+      ++iter_z;
+      ++iter_rgb;
+    }
+    sample_msg_.header = loc_header_;
+    sample_pub_.publish(sample_msg_);
+  }
+  if (elevation_zero_mean_) elevation_ -= mean;
+  return DummyHeightmapSource::update(low_state, requests, result);
+}
+
+void HeightmapSubscriber::exit() {
+  DummyHeightmapSource::exit();
+  js_rules_.clear();
+  subscribing_status_.reset();
+  error_msg_status_.reset();
+}
+
+void HeightmapSubscriber::gridMapCallback(const grid_map_msgs::GridMap::ConstPtr &msg) {
+  std::lock_guard<std::mutex> lock(msg_mtx_);
+  grid_map::GridMapRosConverter::fromMessage(*msg, map_msg_);
+  map_info_     = msg->info;
+  map_received_ = true;
+}
+
+void HeightmapSubscriber::localizationCallback(const ros::MessageEvent<const topic_tools::ShapeShifter> &event) {
+  std::lock_guard<std::mutex> lock(msg_mtx_);
+  auto msg_data = event.getMessage();
+  if (msg_data->getDataType() == "geometry_msgs/Pose") {
+    auto msg          = msg_data->instantiate<geometry_msgs::Pose>();
+    loc_msg_          = *msg;
+    loc_header_.stamp = ros::Time::now();
+    ++loc_header_.seq;
+  } else if (msg_data->getDataType() == "geometry_msgs/PoseStamped") {
+    auto msg    = msg_data->instantiate<geometry_msgs::PoseStamped>();
+    loc_msg_    = msg->pose;
+    loc_header_ = msg->header;
+  } else if (msg_data->getDataType() == "geometry_msgs/PoseWithCovariance") {
+    auto msg          = msg_data->instantiate<geometry_msgs::PoseWithCovariance>();
+    loc_msg_          = msg->pose;
+    loc_header_.stamp = ros::Time::now();
+    ++loc_header_.seq;
+  } else if (msg_data->getDataType() == "geometry_msgs/PoseWithCovarianceStamped") {
+    auto msg    = msg_data->instantiate<geometry_msgs::PoseWithCovarianceStamped>();
+    loc_msg_    = msg->pose.pose;
+    loc_header_ = msg->header;
+  } else if (msg_data->getDataType() == "nav_msgs/Odometry") {
+    auto msg    = msg_data->instantiate<nav_msgs::Odometry>();
+    loc_msg_    = msg->pose.pose;
+    loc_header_ = msg->header;
+  } else {
+    subscriber_enabled_ = false;
+    STEPIT_WARN("HeightmapSubscriber received a message with unsupported type '{}'.", msg_data->getDataType());
+  }
+  loc_received_ = true;
+}
+
+void HeightmapSubscriber::handleControlRequest(ControlRequest request) {
+  switch (lookupAction(request.action(), kSubscriberActionMap)) {
+    case SubscriberAction::kEnableSubscriber:
+      subscriber_enabled_.store(true, std::memory_order_release);
+      request.response(kSuccess);
+      STEPIT_LOG(kStartSubscribingTemplate, "heightmap");
+      break;
+    case SubscriberAction::kDisableSubscriber:
+      subscriber_enabled_ = false;
+      request.response(kSuccess);
+      STEPIT_LOG(kStopSubscribingTemplate, "heightmap");
+      break;
+    case SubscriberAction::kSwitchSubscriber:
+      subscriber_enabled_.store(not subscriber_enabled_, std::memory_order_release);
+      request.response(kSuccess);
+      STEPIT_LOG(subscriber_enabled_ ? kStartSubscribingTemplate : kStopSubscribingTemplate, "heightmap");
+      break;
+    default:
+      request.response(kUnrecognizedRequest);
+      break;
+  }
+}
+
+bool HeightmapSubscriber::checkAllReady() {
+  std::lock_guard<std::mutex> lock(msg_mtx_);
+  if (not subscriber_enabled_) return false;
+  if (not map_received_) {
+    error_msg_ = "Heightmap subscriber was disabled because the heightmap is not received.";
+    STEPIT_WARN(error_msg_);
+    return subscriber_enabled_ = false;
+  }
+  if (not loc_received_) {
+    error_msg_ = "Heightmap subscriber was disabled because the localization is not received.";
+    STEPIT_WARN(error_msg_);
+    return subscriber_enabled_ = false;
+  }
+
+  double map_lag   = (ros::Time::now() - map_info_.header.stamp).toSec();
+  bool map_timeout = map_lag > map_timeout_threshold_;
+  if (map_timeout) {
+    if (not map_timeout_) {
+      map_timeout_ = true;
+      error_msg_   = fmt::format(
+          "Heightmap subscriber was interrupted because the heightmap is outdated (received {:.2f}s ago).", map_lag);
+      STEPIT_WARN(error_msg_);
+    }
+    return false;
+  } else if (map_timeout_) {
+    map_timeout_ = false;
+    error_msg_   = fmt::format("Heightmap subscriber recovered as the heightmap is up-to-date (received {:.2f}s ago).",
+                               map_lag);
+    STEPIT_INFO(error_msg_);
+  }
+
+  double loc_lag   = (ros::Time::now() - loc_header_.stamp).toSec();
+  bool loc_timeout = loc_lag > loc_timeout_threshold_;
+  if (loc_timeout) {
+    if (not loc_timeout_) {
+      loc_timeout_ = true;
+      error_msg_   = fmt::format(
+          "Heightmap subscriber was interrupted because the localization is outdated (received {:.2f}s ago).", loc_lag);
+      STEPIT_WARN(error_msg_);
+    }
+    return false;
+  } else if (loc_timeout_) {
+    loc_timeout_ = false;
+    error_msg_ = fmt::format("Heightmap subscriber recovered as the localization is up-to-date (received {:.2f}s ago).",
+                             loc_lag);
+    STEPIT_INFO(error_msg_);
+  }
+
+  const auto &layers = map_msg_.getLayers();
+  if (std::find(layers.begin(), layers.end(), elevation_layer_) == layers.end()) {
+    error_msg_ = fmt::format("Heightmap subscriber was disabled because the elevation layer '{}' is missing.",
+                             elevation_layer_);
+    STEPIT_WARN(error_msg_);
+    return subscriber_enabled_ = false;
+  }
+  if (not uncertainty_layer_.empty() and std::find(layers.begin(), layers.end(), uncertainty_layer_) == layers.end()) {
+    error_msg_ = fmt::format("Heightmap subscriber was disabled because the uncertainty layer '{}' is missing.",
+                             uncertainty_layer_);
+    STEPIT_WARN(error_msg_);
+    return subscriber_enabled_ = false;
+  }
+  return true;
+}
+
+void HeightmapSubscriber::samplefromMap(float x, float y, float &z, float &u) const {
+  try {
+    z = map_msg_.atPosition(elevation_layer_, {x, y}, elevation_interp_method_);
+  } catch (const std::out_of_range &) {
+    z = std::numeric_limits<float>::quiet_NaN();
+  }
+  if (not std::isfinite(z)) {
+    u = max_uncertainty_;
+    return;
+  }
+  if (uncertainty_layer_.empty()) {
+    u = default_uncertainty_;
+    return;
+  }
+
+  u = map_msg_.atPosition(uncertainty_layer_, {x, y}, uncertainty_interp_method_);
+  if (u < 0 or not std::isfinite(u)) {
+    u = max_uncertainty_;
+    return;
+  }
+  if (uncertainty_squared_) u = std::sqrt(u);
+  u *= uncertainty_scaling_;
+}
+
+STEPIT_REGISTER_FIELD_SOURCE(heightmap_subscriber, kDefPriority, FieldSource::make<HeightmapSubscriber>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(heightmap, kDefPriority, FieldSource::make<HeightmapSubscriber>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(heightmap_uncertainty, kDefPriority, FieldSource::make<HeightmapSubscriber>);
+}  // namespace neuro_policy
+}  // namespace stepit

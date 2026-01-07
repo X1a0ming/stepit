@@ -1,0 +1,34 @@
+roll_scale_factor: 0.523599   # [Optional] Float, the scale factor for roll command (in radians)
+pitch_scale_factor: 0.523599  # [Optional] Float, the scale factor for pitch command (in radians)
+default_cmd_height: 1.0       # [Optional] Float, the default height command
+height_scale_factor: 0.05     # [Optional] Float, the scale factor of adjustment for height command
+height_range: [ 0.6, 1.2 ]    # [Optional] Float, the range of height command
+
+#########################
+# ROS-specific settings #
+#########################
+
+cmd_roll_subscriber:               # settings for the roll command subscriber
+  topic: "cmd_vel"                 # [Optional] String, the ROS topic to subscribe for roll commands
+  queue_size: 1                    # [Optional] Int, the size of the subscriber queue
+  transport_hints:                 # settings for ROS transport hints
+    type: "tcpnodelay"             # [Optional] Literal["reliable", "unreliable", "tcp", "udp", "tcpnodelay"],
+                                   #   the type of transport hint
+  timeout_threshold: 0.1           # [Optional] Float, timeout threshold in seconds to consider the command stale
+  default_enabled: false           # [Optional] Bool, whether to enable the ROS subscriber on policy starting
+
+cmd_pitch_subscriber:              # Similar settings for the pitch command subscriber
+  topic: "cmd_vel"
+  queue_size: 1
+  transport_hints:
+    type: "tcpnodelay"
+  timeout_threshold: 0.1
+  default_enabled: false
+
+cmd_height_subscriber:             # Similar settings for the height command subscriber
+  topic: "cmd_vel"
+  queue_size: 1
+  transport_hints:
+    type: "tcpnodelay"
+  timeout_threshold: 0.1
+  default_enabled: false
