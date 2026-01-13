@@ -14,5 +14,5 @@ class Ros2Spin : public WaitForSigInt {
   }
 };
 
-STEPIT_REGISTER_SPIN(ros2, kDefPriority, [] { return std::make_unique<Ros2Spin>(); });
+STEPIT_REGISTER_SPIN(ros2, kDefPriority, Spin::makeDerived<Ros2Spin>);
 }  // namespace stepit

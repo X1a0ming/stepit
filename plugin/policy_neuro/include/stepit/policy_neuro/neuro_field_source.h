@@ -20,7 +20,7 @@ class NeuroFieldSource : public FieldSource {
                    std::vector<std::vector<std::uint32_t>> &field_dims, std::vector<std::uint32_t> &total_dims,
                    std::vector<std::vector<FieldId>> &fields);
 
-  NnrtApiPtr nn_;
+  NnrtApi::Ptr nn_;
   YAML::Node config_;
 
   std::string run_name_{};

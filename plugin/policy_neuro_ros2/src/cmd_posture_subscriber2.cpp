@@ -321,10 +321,10 @@ void CmdHeightSubscriber2::handleControlRequest(ControlRequest request) {
   }
 }
 
-STEPIT_REGISTER_FIELD_SOURCE(cmd_roll_subscriber, kDefPriority, FieldSource::make<CmdRollSubscriber2>);
-STEPIT_REGISTER_FIELD_SOURCE(cmd_pitch_subscriber, kDefPriority, FieldSource::make<CmdPitchSubscriber2>);
-STEPIT_REGISTER_FIELD_SOURCE(cmd_height_subscriber, kDefPriority, FieldSource::make<CmdHeightSubscriber2>);
-STEPIT_REGISTER_SOURCE_OF_FIELD(cmd_roll, kDefPriority, FieldSource::make<CmdRollSubscriber2>);
-STEPIT_REGISTER_SOURCE_OF_FIELD(cmd_pitch, kDefPriority, FieldSource::make<CmdPitchSubscriber2>);
-STEPIT_REGISTER_SOURCE_OF_FIELD(cmd_height, kDefPriority, FieldSource::make<CmdHeightSubscriber2>);
+STEPIT_REGISTER_FIELD_SOURCE(cmd_roll_subscriber, kDefPriority, FieldSource::makeDerived<CmdRollSubscriber2>);
+STEPIT_REGISTER_FIELD_SOURCE(cmd_pitch_subscriber, kDefPriority, FieldSource::makeDerived<CmdPitchSubscriber2>);
+STEPIT_REGISTER_FIELD_SOURCE(cmd_height_subscriber, kDefPriority, FieldSource::makeDerived<CmdHeightSubscriber2>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(cmd_roll, kDefPriority, FieldSource::makeDerived<CmdRollSubscriber2>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(cmd_pitch, kDefPriority, FieldSource::makeDerived<CmdPitchSubscriber2>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(cmd_height, kDefPriority, FieldSource::makeDerived<CmdHeightSubscriber2>);
 }  // namespace stepit::neuro_policy

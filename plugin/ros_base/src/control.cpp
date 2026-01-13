@@ -11,8 +11,6 @@ void RosMsgControl::msgCallback(const std_msgs::String::ConstPtr &msg) {
   put(msg->data);
 }
 
-STEPIT_REGISTER_CTRLINPUT(ros_msg, kDefPriority, [] { return std::make_unique<RosMsgControl>(); });
-
 RosSrvControl::RosSrvControl() {
   srv_ = getNodeHandle().advertiseService("control", &RosSrvControl::srvCallback, this);
 }
@@ -25,5 +23,6 @@ bool RosSrvControl::srvCallback(stepit_ros_msgs::Control::Request &req, stepit_r
   return true;
 }
 
-STEPIT_REGISTER_CTRLINPUT(ros_srv, kDefPriority, [] { return std::make_unique<RosSrvControl>(); });
+STEPIT_REGISTER_CTRLINPUT(ros_msg, kDefPriority, ControlInput::makeDerived<RosMsgControl>);
+STEPIT_REGISTER_CTRLINPUT(ros_srv, kDefPriority, ControlInput::makeDerived<RosSrvControl>);
 }  // namespace stepit

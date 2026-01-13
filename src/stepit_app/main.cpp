@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
         type_str = "";
         home_dir = policy;
       }
-      agent->addPolicy(stepit::PolicyReg::make(type_str, agent->spec(), home_dir));
+      agent->addPolicy(stepit::Policy::make(type_str, agent->spec(), home_dir));
     }
   }
 

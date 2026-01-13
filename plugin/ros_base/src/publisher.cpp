@@ -94,5 +94,5 @@ void RosPublisher::publishArray(const std::string &name, cArrXf vec) {
   channel->second.publish(msg);
 }
 
-STEPIT_REGISTER_PUBLISHER(ros, kDefPriority, []() { return std::make_unique<RosPublisher>(); });
+STEPIT_REGISTER_PUBLISHER(ros, kDefPriority, Publisher::makeDerived<RosPublisher>);
 }  // namespace stepit

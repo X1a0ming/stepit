@@ -23,6 +23,6 @@ void Unitree2Ros2Joystick::callback(const u2ros2_msg::WirelessController::Shared
   tick_ += 1;
 }
 
-STEPIT_REGISTER_JOYSTICK(unitree2_ros2, kDefPriority, [] { return std::make_unique<Unitree2Ros2Joystick>(); });
+STEPIT_REGISTER_JOYSTICK(unitree2_ros2, kDefPriority, Joystick::makeDerived<Unitree2Ros2Joystick>);
 }  // namespace joystick
 }  // namespace stepit

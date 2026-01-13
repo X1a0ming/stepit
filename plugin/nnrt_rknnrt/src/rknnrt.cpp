@@ -91,7 +91,5 @@ void RknnrtApi::setInput(std::size_t idx, float *data) {
 
 const float *RknnrtApi::getOutput(std::size_t idx) { return static_cast<float *>(out_mems_[idx]->virt_addr); }
 
-STEPIT_REGISTER_NNRTAPI(rknnrt, kDefPriority, [](const std::string &path, const YAML::Node &config) {
-  return std::make_unique<RknnrtApi>(path, config);
-});
+STEPIT_REGISTER_NNRTAPI(rknnrt, kDefPriority, NnrtApi::makeDerived<RknnrtApi>);
 }  // namespace stepit

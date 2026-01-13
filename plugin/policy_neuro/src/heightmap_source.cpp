@@ -42,8 +42,8 @@ bool DummyHeightmapSource::update(const LowState &low_state, ControlRequests &re
   return true;
 }
 
-STEPIT_REGISTER_FIELD_SOURCE(heightmap, kMinPriority, FieldSource::make<DummyHeightmapSource>);
-STEPIT_REGISTER_SOURCE_OF_FIELD(heightmap, kMinPriority, FieldSource::make<DummyHeightmapSource>);
-STEPIT_REGISTER_SOURCE_OF_FIELD(heightmap_uncertainty, kMinPriority, FieldSource::make<DummyHeightmapSource>);
+STEPIT_REGISTER_FIELD_SOURCE(heightmap, kMinPriority, FieldSource::makeDerived<DummyHeightmapSource>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(heightmap, kMinPriority, FieldSource::makeDerived<DummyHeightmapSource>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(heightmap_uncertainty, kMinPriority, FieldSource::makeDerived<DummyHeightmapSource>);
 }  // namespace neuro_policy
 }  // namespace stepit

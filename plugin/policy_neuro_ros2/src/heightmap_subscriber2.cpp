@@ -346,7 +346,7 @@ void HeightmapSubscriber2::samplefromMap(float x, float y, float &z, float &u) c
   u *= uncertainty_scaling_;
 }
 
-STEPIT_REGISTER_FIELD_SOURCE(heightmap_subscriber, kDefPriority, FieldSource::make<HeightmapSubscriber2>);
-STEPIT_REGISTER_SOURCE_OF_FIELD(heightmap, kDefPriority, FieldSource::make<HeightmapSubscriber2>);
-STEPIT_REGISTER_SOURCE_OF_FIELD(heightmap_uncertainty, kDefPriority, FieldSource::make<HeightmapSubscriber2>);
+STEPIT_REGISTER_FIELD_SOURCE(heightmap_subscriber, kDefPriority, FieldSource::makeDerived<HeightmapSubscriber2>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(heightmap, kDefPriority, FieldSource::makeDerived<HeightmapSubscriber2>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(heightmap_uncertainty, kDefPriority, FieldSource::makeDerived<HeightmapSubscriber2>);
 }  // namespace stepit::neuro_policy

@@ -252,7 +252,7 @@ void G1DoF29Api::callback(const hg_msg::LowState_ *msg) {
   low_state_.tick = msg->tick();
 }
 
-STEPIT_REGISTER_ROBOTAPI(g1_15dof, kDefPriority, [] { return std::make_unique<G1DoF15Api>(); });
-STEPIT_REGISTER_ROBOTAPI(g1_23dof, kDefPriority, [] { return std::make_unique<G1DoF23Api>(); });
-STEPIT_REGISTER_ROBOTAPI(g1_29dof, kDefPriority, [] { return std::make_unique<G1DoF29Api>(); });
+STEPIT_REGISTER_ROBOTAPI(g1_15dof, kDefPriority, RobotApi::makeDerived<G1DoF15Api>);
+STEPIT_REGISTER_ROBOTAPI(g1_23dof, kDefPriority, RobotApi::makeDerived<G1DoF23Api>);
+STEPIT_REGISTER_ROBOTAPI(g1_29dof, kDefPriority, RobotApi::makeDerived<G1DoF29Api>);
 }  // namespace stepit

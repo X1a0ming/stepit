@@ -210,9 +210,9 @@ void HybridActuator::setLowCmd(LowCmd &cmd, cArrXf action) {
   }
 }
 
-STEPIT_REGISTER_ACTUATOR(position, kDefPriority, Actuator::make<PositionActuator>);
-STEPIT_REGISTER_ACTUATOR(velocity, kDefPriority, Actuator::make<VelocityActuator>);
-STEPIT_REGISTER_ACTUATOR(torque, kDefPriority, Actuator::make<TorqueActuator>);
-STEPIT_REGISTER_ACTUATOR(hybrid, kDefPriority, Actuator::make<HybridActuator>);
+STEPIT_REGISTER_ACTUATOR(position, kDefPriority, Actuator::makeDerived<PositionActuator>);
+STEPIT_REGISTER_ACTUATOR(velocity, kDefPriority, Actuator::makeDerived<VelocityActuator>);
+STEPIT_REGISTER_ACTUATOR(torque, kDefPriority, Actuator::makeDerived<TorqueActuator>);
+STEPIT_REGISTER_ACTUATOR(hybrid, kDefPriority, Actuator::makeDerived<HybridActuator>);
 }  // namespace neuro_policy
 }  // namespace stepit

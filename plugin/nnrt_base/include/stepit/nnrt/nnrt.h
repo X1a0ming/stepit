@@ -8,13 +8,9 @@
 #include <stepit/registry.h>
 
 namespace stepit {
-class NnrtApi {
+class NnrtApi : public Interface<NnrtApi, const std::string & /* path */, const YAML::Node & /* config */> {
  public:
-  using Ptr = std::shared_ptr<NnrtApi>;
-  using Reg = RegistrySingleton<NnrtApi, const std::string &, const YAML::Node &>;
-
   NnrtApi(const std::string &path, const YAML::Node &config);
-  virtual ~NnrtApi()                  = default;
   NnrtApi(const NnrtApi &)            = delete;
   NnrtApi &operator=(const NnrtApi &) = delete;
 
@@ -65,12 +61,10 @@ class NnrtApi {
   std::vector<std::pair<std::size_t, std::size_t>> recur_param_indices_;
 };
 
-using NnrtApiPtr = NnrtApi::Ptr;
-using NnrtApiReg = NnrtApi::Reg;
 extern template class RegistrySingleton<NnrtApi, const std::string &, const YAML::Node &>;
 }  // namespace stepit
 
 #define STEPIT_REGISTER_NNRTAPI(name, priority, factory) \
-  static ::stepit::NnrtApiReg::Registration _nnrtapi_##name##_registration(#name, priority, factory)
+  static ::stepit::NnrtApi::Registration _nnrtapi_##name##_registration(#name, priority, factory)
 
 #endif  // STEPIT_NNRT_H_

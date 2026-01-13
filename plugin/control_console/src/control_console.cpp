@@ -34,5 +34,5 @@ void ConsoleControl::readerThread() {
   }
 }
 
-STEPIT_REGISTER_CTRLINPUT(console, kDefPriority, [] { return std::make_unique<ConsoleControl>(); });
+STEPIT_REGISTER_CTRLINPUT(console, kDefPriority, ControlInput::makeDerived<ConsoleControl>);
 }  // namespace stepit

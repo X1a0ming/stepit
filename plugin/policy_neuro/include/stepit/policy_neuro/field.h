@@ -16,15 +16,10 @@ using FieldId    = std::size_t;
 using FieldMap   = std::map<FieldId, ArrXf>;
 using FieldIdVec = std::vector<FieldId>;
 
-class FieldSource {
+class FieldSource
+    : public Interface<FieldSource, const PolicySpec & /* policy_spec */, const std::string & /* home_dir */> {
  public:
-  using Ptr = std::unique_ptr<FieldSource>;
-  using Reg = RegistrySingleton<FieldSource, const PolicySpec &, const std::string &>;
-
-  FieldSource()          = default;
-  virtual ~FieldSource() = default;
   virtual void initFieldProperties() {}
-
   virtual bool reset() { return true; }
   virtual bool update(const LowState &low_state, ControlRequests &requests, FieldMap &result) = 0;
   virtual void postUpdate(const FieldMap &field_map) {}
@@ -33,11 +28,6 @@ class FieldSource {
   const std::set<FieldId> &requirements() const { return requirements_; }
   const std::set<FieldId> &provisions() const { return provisions_; }
 
-  template <typename Derived>
-  static Ptr make(const PolicySpec &policy_spec, const std::string &home_dir) {
-    return std::make_unique<Derived>(policy_spec, home_dir);
-  }
-
  protected:
   FieldId registerRequirement(const std::string &field_name);
   FieldId registerRequirement(FieldId field_id);
@@ -45,9 +35,6 @@ class FieldSource {
 
   std::set<FieldId> requirements_, provisions_;
 };
-
-using FieldSourcePtr = FieldSource::Ptr;
-using FieldSourceReg = FieldSource::Reg;
 
 // Singleton registry to manage observations
 class FieldManager {
@@ -60,7 +47,7 @@ class FieldManager {
   auto registerSource(const std::string &name, int priority, SourceRegistry::Factory factory)
       -> SourceRegistry::Registration;
   auto makeSource(const std::string &name, const PolicySpec &policy_spec, const std::string &home_dir)
-      -> FieldSourcePtr;
+      -> FieldSource::Ptr;
 
   FieldId registerField(const std::string &name, std::uint32_t size);
   FieldId getFieldId(const std::string &name);
@@ -87,8 +74,8 @@ inline FieldId getFieldId(const std::string &name) { return fieldManager().getFi
 inline const std::string &getFieldName(FieldId id) { return fieldManager().getFieldName(id); }
 inline std::uint32_t getFieldSize(FieldId id) { return fieldManager().getFieldSize(id); }
 inline void setFieldSize(FieldId id, std::uint32_t size) { fieldManager().setFieldSize(id, size); }
-inline FieldSourcePtr makeSourceOfField(const std::string &field_name, const PolicySpec &policy_spec,
-                                        const std::string &home_dir) {
+inline FieldSource::Ptr makeSourceOfField(const std::string &field_name, const PolicySpec &policy_spec,
+                                          const std::string &home_dir) {
   return fieldManager().makeSource(field_name, policy_spec, home_dir);
 }
 
@@ -100,9 +87,8 @@ void splitFields(cArrXf data, const FieldIdVec &field_ids, FieldMap &result);
 extern template class RegistrySingleton<neuro_policy::FieldSource, const PolicySpec &, const std::string &>;
 }  // namespace stepit
 
-#define STEPIT_REGISTER_FIELD_SOURCE(name, priority, factory)                                                   \
-  static auto _field_source_class_##name##_registration = ::stepit::neuro_policy::FieldSourceReg::Registration( \
-      #name, priority, factory)
+#define STEPIT_REGISTER_FIELD_SOURCE(name, priority, factory) \
+  static ::stepit::neuro_policy::FieldSource::Registration _field_source_##name##_registration(#name, priority, factory)
 #define STEPIT_REGISTER_SOURCE_OF_FIELD(field_name, priority, factory)                           \
   static auto _field_##field_name##_source_registration = ::stepit::neuro_policy::fieldManager() \
                                                               .registerSource(#field_name, priority, factory)

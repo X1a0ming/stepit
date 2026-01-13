@@ -184,11 +184,11 @@ void CmdHeightSource::handleControlRequest(ControlRequest request) {
   }
 }
 
-STEPIT_REGISTER_FIELD_SOURCE(cmd_roll, kDefPriority - 1, FieldSource::make<CmdRollSource>);
-STEPIT_REGISTER_FIELD_SOURCE(cmd_pitch, kDefPriority - 1, FieldSource::make<CmdPitchSource>);
-STEPIT_REGISTER_FIELD_SOURCE(cmd_height, kDefPriority - 1, FieldSource::make<CmdHeightSource>);
-STEPIT_REGISTER_SOURCE_OF_FIELD(cmd_roll, kDefPriority - 1, FieldSource::make<CmdRollSource>);
-STEPIT_REGISTER_SOURCE_OF_FIELD(cmd_pitch, kDefPriority - 1, FieldSource::make<CmdPitchSource>);
-STEPIT_REGISTER_SOURCE_OF_FIELD(cmd_height, kDefPriority - 1, FieldSource::make<CmdHeightSource>);
+STEPIT_REGISTER_FIELD_SOURCE(cmd_roll, kDefPriority - 1, FieldSource::makeDerived<CmdRollSource>);
+STEPIT_REGISTER_FIELD_SOURCE(cmd_pitch, kDefPriority - 1, FieldSource::makeDerived<CmdPitchSource>);
+STEPIT_REGISTER_FIELD_SOURCE(cmd_height, kDefPriority - 1, FieldSource::makeDerived<CmdHeightSource>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(cmd_roll, kDefPriority - 1, FieldSource::makeDerived<CmdRollSource>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(cmd_pitch, kDefPriority - 1, FieldSource::makeDerived<CmdPitchSource>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(cmd_height, kDefPriority - 1, FieldSource::makeDerived<CmdHeightSource>);
 }  // namespace neuro_policy
 }  // namespace stepit

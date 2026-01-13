@@ -14,12 +14,8 @@
 
 namespace stepit {
 namespace joystick {
-class Joystick {
+class Joystick : public Interface<Joystick> {
  public:
-  using Ptr = std::unique_ptr<Joystick>;
-  using Reg = RegistrySingleton<Joystick>;
-
-  virtual ~Joystick()            = default;
   virtual bool connected() const = 0;
   virtual void getState(State &) = 0;
 };
@@ -58,12 +54,10 @@ class JoystickControl::Registration {
 
 using joystick::Joystick;
 using joystick::JoystickControl;
-using JoystickPtr = Joystick::Ptr;
-using JoystickReg = Joystick::Reg;
 extern template class RegistrySingleton<Joystick>;
 }  // namespace stepit
 
 #define STEPIT_REGISTER_JOYSTICK(name, priority, factory) \
-  static ::stepit::JoystickReg::Registration _joystick_##name##_registration(#name, priority, factory)
+  static ::stepit::Joystick::Registration _joystick_##name##_registration(#name, priority, factory)
 
 #endif  // STEPIT_JOYSTICK_H_

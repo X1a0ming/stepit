@@ -63,12 +63,8 @@ struct ControlRequests : public std::list<ControlRequest> {
   ControlRequests filterByChannel(const std::string &channel_prefix);
 };
 
-class ControlInput {
+class ControlInput : public Interface<ControlInput> {
  public:
-  using Ptr = std::unique_ptr<ControlInput>;
-  using Reg = RegistrySingleton<ControlInput>;
-
-  virtual ~ControlInput()        = default;
   virtual bool available() const = 0;
   virtual void poll()            = 0;
   boost::optional<ControlRequest> pop();
@@ -81,8 +77,6 @@ class ControlInput {
   std::deque<ControlRequest> requests_;
 };
 
-using CtrlInputPtr = ControlInput::Ptr;
-using CtrlInputReg = ControlInput::Reg;
 extern template class RegistrySingleton<ControlInput>;
 
 class MultipleControlInputs {
@@ -93,7 +87,7 @@ class MultipleControlInputs {
   boost::optional<ControlRequest> pop();
 
  private:
-  std::vector<CtrlInputPtr> inputs_;
+  std::vector<ControlInput::Ptr> inputs_;
 };
 
 template <typename Action>
@@ -109,6 +103,6 @@ struct fmt::formatter<stepit::ControlRequest> : fmt::ostream_formatter {};
 #endif
 
 #define STEPIT_REGISTER_CTRLINPUT(name, priority, factory) \
-  static ::stepit::CtrlInputReg::Registration _ctrl_##name##_registration(#name, priority, factory)
+  static ::stepit::ControlInput::Registration _ctrl_##name##_registration(#name, priority, factory)
 
 #endif  // STEPIT_CONTROL_INPUT_H_

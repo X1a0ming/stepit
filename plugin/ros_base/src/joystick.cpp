@@ -77,7 +77,7 @@ void RosJoystick::buttonHandler(std::size_t bid, bool value) {
   slots_.buttons[bid].update(value);
 }
 
-STEPIT_REGISTER_JOYSTICK(ros, kDefPriority, [] { return std::make_unique<RosJoystick>(); });
+STEPIT_REGISTER_JOYSTICK(ros, kDefPriority, Joystick::makeDerived<RosJoystick>);
 STEPIT_REGISTER_JOYSTICK(ros_xbox, kDefPriority, [] { return std::make_unique<RosJoystick>(getXboxKeymap()); });
 }  // namespace joystick
 }  // namespace stepit

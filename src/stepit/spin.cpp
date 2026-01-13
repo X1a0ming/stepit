@@ -6,5 +6,5 @@
 namespace stepit {
 volatile std::sig_atomic_t WaitForSigInt::sigint_received_ = 0;
 
-int spin() { return SpinReg::make("")->spin(); }
+int spin() { return Spin::make("")->spin(); }
 }  // namespace stepit

@@ -236,6 +236,23 @@ class RegistrySingleton {
     return instance().make(std::move(name), std::forward<Args>(args)...);
   }
 };
+
+template <typename Derived, typename... Args>
+class Interface {
+ public:
+  virtual ~Interface() = default;
+  using Ptr            = std::unique_ptr<Derived>;
+  using Registry       = RegistrySingleton<Derived, Args...>;
+  using Factory        = typename Registry::Factory;
+  using Registration   = typename Registry::Registration;
+  static Ptr make(std::string name, Args... args) {
+    return Registry::make(std::move(name), std::forward<Args>(args)...);
+  }
+  template <typename T>
+  static Ptr makeDerived(Args... args) {
+    return std::make_unique<T>(std::forward<Args>(args)...);
+  }
+};
 }  // namespace stepit
 
 #endif  // STEPIT_REGISTRY_H_

@@ -6,5 +6,5 @@ int ExitSpin::spin() {
   return 0;
 }
 
-STEPIT_REGISTER_SPIN(exit, kMinPriority, [] { return std::make_unique<ExitSpin>(); });
+STEPIT_REGISTER_SPIN(exit, kMinPriority, Spin::makeDerived<ExitSpin>);
 }  // namespace stepit

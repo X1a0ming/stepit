@@ -111,14 +111,10 @@ struct RobotSpec {
   float kd_damped_mode{5.};
 };
 
-class RobotApi {
+class RobotApi : public Interface<RobotApi> {
  public:
-  using Ptr = std::unique_ptr<RobotApi>;
-  using Reg = RegistrySingleton<RobotApi>;
-
   explicit RobotApi(const std::string &name)
       : config_(yml::loadFile(fmt::format("{}/robot/{}.yml", kConfigDir, name))), spec_(config_) {}
-  virtual ~RobotApi() = default;
 
   virtual void getControl(bool enable) = 0;
   virtual void setSend(LowCmd &)       = 0;
@@ -136,12 +132,10 @@ class RobotApi {
   RobotSpec spec_;
 };
 
-using RobotApiPtr = RobotApi::Ptr;
-using RobotApiReg = RobotApi::Reg;
 extern template class RegistrySingleton<RobotApi>;
 }  // namespace stepit
 
 #define STEPIT_REGISTER_ROBOTAPI(name, priority, factory) \
-  static ::stepit::RobotApiReg::Registration _robotapi_##name##_registration(#name, priority, factory)
+  static ::stepit::RobotApi::Registration _robotapi_##name##_registration(#name, priority, factory)
 
 #endif

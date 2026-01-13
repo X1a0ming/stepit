@@ -95,8 +95,8 @@ void CmdVelSubscriber::handleControlRequest(ControlRequest request) {
   }
 }
 
-STEPIT_REGISTER_FIELD_SOURCE(cmd_vel_subscriber, kDefPriority, FieldSource::make<CmdVelSubscriber>);
-STEPIT_REGISTER_SOURCE_OF_FIELD(cmd_vel, kDefPriority, FieldSource::make<CmdVelSubscriber>);
-STEPIT_REGISTER_SOURCE_OF_FIELD(cmd_stall, kDefPriority, FieldSource::make<CmdVelSubscriber>);
+STEPIT_REGISTER_FIELD_SOURCE(cmd_vel_subscriber, kDefPriority, FieldSource::makeDerived<CmdVelSubscriber>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(cmd_vel, kDefPriority, FieldSource::makeDerived<CmdVelSubscriber>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(cmd_stall, kDefPriority, FieldSource::makeDerived<CmdVelSubscriber>);
 }  // namespace neuro_policy
 }  // namespace stepit

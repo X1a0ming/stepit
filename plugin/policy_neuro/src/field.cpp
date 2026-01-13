@@ -30,8 +30,8 @@ auto FieldManager::registerSource(const std::string &name, int priority, SourceR
   return source_registry_.createRegistration(name, priority, std::move(factory));
 }
 
-FieldSourcePtr FieldManager::makeSource(const std::string &name, const PolicySpec &policy_spec,
-                                        const std::string &home_dir) {
+FieldSource::Ptr FieldManager::makeSource(const std::string &name, const PolicySpec &policy_spec,
+                                          const std::string &home_dir) {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   return source_registry_.make(name, policy_spec, home_dir);
 }

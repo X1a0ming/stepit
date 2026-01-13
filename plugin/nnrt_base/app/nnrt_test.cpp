@@ -13,8 +13,8 @@ int main(int argc, char *argv[]) {
   std::vector<std::string> args{argv[0]};
   PluginManager plugin_manager(args);
 
-  auto model1 = NnrtApiReg::make("", argv[1], argc == 3 ? yml::loadFile(argv[2]) : YAML::Node());
-  auto model2 = NnrtApiReg::make("", argv[1], argc == 3 ? yml::loadFile(argv[2]) : YAML::Node());
+  auto model1 = NnrtApi::make("", argv[1], argc == 3 ? yml::loadFile(argv[2]) : YAML::Node());
+  auto model2 = NnrtApi::make("", argv[1], argc == 3 ? yml::loadFile(argv[2]) : YAML::Node());
   model1->printInfo();
   model1->clearState();
   model2->clearState();

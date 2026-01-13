@@ -62,7 +62,7 @@ int setThreadRT(pthread_t thread) {
 }
 
 Communication::Communication(const std::string &robot_type)
-    : api_(RobotApiReg::make(robot_type)),
+    : api_(RobotApi::make(robot_type)),
       dof_{api_->getDoF()},
       comm_freq_{api_->getCommFreq()},
       low_state_msg_(api_->getDoF(), api_->getNumLegs()),

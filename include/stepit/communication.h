@@ -16,7 +16,7 @@ class Communication {
   explicit Communication(const std::string &robot_type);
   virtual ~Communication() { stopCommunicationThread(); }
 
-  const RobotApiPtr &api() const { return api_; }
+  const RobotApi::Ptr &api() const { return api_; }
   const RobotSpec &spec() const { return api_->getSpec(); }
   std::size_t dof() const { return dof_; }
   LowState getLowState();
@@ -29,7 +29,7 @@ class Communication {
   void communicationEvent();
   void setDampedMode();
 
-  RobotApiPtr api_;
+  RobotApi::Ptr api_;
   std::thread comm_thread_;
   std::atomic<pid_t> comm_tid_{-1};
 

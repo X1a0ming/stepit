@@ -67,5 +67,5 @@ void Go2Api::callback(const u2_msg::LowState_ *msg) {
   low_state_.tick = msg->tick();
 }
 
-STEPIT_REGISTER_ROBOTAPI(go2, kDefPriority, [] { return std::make_unique<Go2Api>(); });
+STEPIT_REGISTER_ROBOTAPI(go2, kDefPriority, RobotApi::makeDerived<Go2Api>);
 }  // namespace stepit

@@ -11,7 +11,7 @@ bool RollPitchSource::update(const LowState &low_state, ControlRequests &request
   return true;
 }
 
-STEPIT_REGISTER_FIELD_SOURCE(roll_pitch, kDefPriority, FieldSource::make<RollPitchSource>);
-STEPIT_REGISTER_SOURCE_OF_FIELD(roll_pitch, kDefPriority, FieldSource::make<RollPitchSource>);
+STEPIT_REGISTER_FIELD_SOURCE(roll_pitch, kDefPriority, FieldSource::makeDerived<RollPitchSource>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(roll_pitch, kDefPriority, FieldSource::makeDerived<RollPitchSource>);
 }  // namespace neuro_policy
 }  // namespace stepit

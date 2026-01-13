@@ -26,11 +26,11 @@ bool Proprioceptor::update(const LowState &low_state, ControlRequests &requests,
   return true;
 }
 
-STEPIT_REGISTER_FIELD_SOURCE(proprioceptor, kDefPriority, FieldSource::make<Proprioceptor>);
-STEPIT_REGISTER_SOURCE_OF_FIELD(ang_vel, kDefPriority, FieldSource::make<Proprioceptor>);
-STEPIT_REGISTER_SOURCE_OF_FIELD(gravity, kDefPriority, FieldSource::make<Proprioceptor>);
-STEPIT_REGISTER_SOURCE_OF_FIELD(joint_pos, kDefPriority, FieldSource::make<Proprioceptor>);
-STEPIT_REGISTER_SOURCE_OF_FIELD(joint_vel, kDefPriority, FieldSource::make<Proprioceptor>);
-STEPIT_REGISTER_SOURCE_OF_FIELD(lin_acc, kDefPriority, FieldSource::make<Proprioceptor>);
+STEPIT_REGISTER_FIELD_SOURCE(proprioceptor, kDefPriority, FieldSource::makeDerived<Proprioceptor>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(ang_vel, kDefPriority, FieldSource::makeDerived<Proprioceptor>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(gravity, kDefPriority, FieldSource::makeDerived<Proprioceptor>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(joint_pos, kDefPriority, FieldSource::makeDerived<Proprioceptor>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(joint_vel, kDefPriority, FieldSource::makeDerived<Proprioceptor>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(lin_acc, kDefPriority, FieldSource::makeDerived<Proprioceptor>);
 }  // namespace neuro_policy
 }  // namespace stepit

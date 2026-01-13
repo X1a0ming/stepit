@@ -18,13 +18,13 @@ NeuroPolicy::NeuroPolicy(const RobotSpec &robot_spec, const std::string &home_di
   if (fs_node) {
     STEPIT_ASSERT(fs_node.IsSequence(), "'field_source' must be a sequence.");
     for (const auto &fs : fs_node) {
-      addFieldSource(FieldSourceReg::make(fs.as<std::string>(), spec_, home_dir), false);
+      addFieldSource(FieldSource::make(fs.as<std::string>(), spec_, home_dir), false);
     }
   }
   // Add the actuator and the actor
   std::string actuator_type = "position";
   if (config_["actuator"]) yml::setIf(config_["actuator"], "type", actuator_type);
-  auto actuator = ActuatorReg::make(actuator_type, spec_, home_dir);
+  auto actuator = Actuator::make(actuator_type, spec_, home_dir);
   actuator_     = actuator.get();
   addFieldSource(std::move(actuator), true);
   if (available_fields_.find(action_id_) == available_fields_.end() and
@@ -153,8 +153,6 @@ bool NeuroPolicy::isSatisfied(const std::set<FieldId> &requirements) const {
                      [this](FieldId field) { return available_fields_.find(field) != available_fields_.end(); });
 }
 
-STEPIT_REGISTER_POLICY(neuro, kDefPriority, [](const RobotSpec &robot_spec, const std::string &directory) {
-  return std::make_unique<NeuroPolicy>(robot_spec, directory);
-});
+STEPIT_REGISTER_POLICY(neuro, kDefPriority, Policy::makeDerived<NeuroPolicy>);
 }  // namespace neuro_policy
 }  // namespace stepit

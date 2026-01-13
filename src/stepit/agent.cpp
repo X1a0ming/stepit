@@ -21,7 +21,7 @@ const std::map<std::string, Agent::Action> Agent::kActionMap = {
 Agent::Agent(const std::string &robot_type, const std::vector<std::string> &ctrl_type)
     : Communication(robot_type), ctrl_input_(ctrl_type), command_(dof()) {}
 
-void Agent::addPolicy(PolicyPtr policy) {
+void Agent::addPolicy(Policy::Ptr policy) {
   if (getCommunicationFreq() % policy->getControlFreq() != 0) {
     STEPIT_WARN("Policy control frequency ({}) is not a divisor of the communication frequency ({}).",
                 policy->getControlFreq(), getCommunicationFreq());

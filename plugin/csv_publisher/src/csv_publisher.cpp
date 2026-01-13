@@ -59,5 +59,5 @@ void CsvPublisher::publishLowLevel(const RobotSpec &spec, const LowState &state,
   file_ << '\n';
 }
 
-STEPIT_REGISTER_PUBLISHER(csv, kDefPriority, [] { return std::make_unique<CsvPublisher>(); });
+STEPIT_REGISTER_PUBLISHER(csv, kDefPriority, Publisher::makeDerived<CsvPublisher>);
 }  // namespace stepit

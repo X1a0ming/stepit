@@ -6,7 +6,7 @@ std::map<std::size_t, JoystickControl::Rule> JoystickControl::rules_;
 std::size_t JoystickControl::rule_count_{0};
 std::mutex JoystickControl::rule_mutex_;
 
-JoystickControl::JoystickControl(const std::string &js_type) { js_ = JoystickReg::make(js_type); }
+JoystickControl::JoystickControl(const std::string &js_type) { js_ = Joystick::make(js_type); }
 
 void JoystickControl::poll() {
   js_->getState(state_);
@@ -63,5 +63,5 @@ JoystickControl::Registration &JoystickControl::Registration::operator=(Registra
 }  // namespace joystick
 
 template class RegistrySingleton<Joystick>;
-STEPIT_REGISTER_CTRLINPUT(joystick, kDefPriority, [] { return std::make_unique<JoystickControl>(); });
+STEPIT_REGISTER_CTRLINPUT(joystick, kDefPriority, ControlInput::makeDerived<JoystickControl>);
 }  // namespace stepit

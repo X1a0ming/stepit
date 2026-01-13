@@ -82,5 +82,5 @@ void B2Api::callback(const u2_msg::LowState_ *msg) {
   }
 }
 
-STEPIT_REGISTER_ROBOTAPI(b2, kDefPriority, [] { return std::make_unique<B2Api>(); });
+STEPIT_REGISTER_ROBOTAPI(b2, kDefPriority, RobotApi::makeDerived<B2Api>);
 }  // namespace stepit

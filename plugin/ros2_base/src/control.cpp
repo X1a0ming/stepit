@@ -12,8 +12,6 @@ void Ros2MsgControl::msgCallback(const std_msgs::msg::String::SharedPtr msg) {
   put(msg->data);
 }
 
-STEPIT_REGISTER_CTRLINPUT(ros2_msg, kDefPriority, [] { return std::make_unique<Ros2MsgControl>(); });
-
 Ros2SrvControl::Ros2SrvControl() {
   srv_ = getNode()->create_service<ControlSrv>(
       "control", std::bind(&Ros2SrvControl::srvCallback, this, std::placeholders::_1, std::placeholders::_2));
@@ -26,5 +24,6 @@ void Ros2SrvControl::srvCallback(const ControlSrv::Request::SharedPtr req, Contr
   res->message  = response.message;
 }
 
-STEPIT_REGISTER_CTRLINPUT(ros2_srv, kDefPriority, [] { return std::make_unique<Ros2SrvControl>(); });
+STEPIT_REGISTER_CTRLINPUT(ros2_msg, kDefPriority, ControlInput::makeDerived<Ros2MsgControl>);
+STEPIT_REGISTER_CTRLINPUT(ros2_srv, kDefPriority, ControlInput::makeDerived<Ros2SrvControl>);
 }  // namespace stepit

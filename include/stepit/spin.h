@@ -13,11 +13,8 @@ namespace stepit {
  *
  * Spin implementations define a main loop or wait mechanism via the spin() method.
  */
-class Spin {
+class Spin: public Interface<Spin> {
  public:
-  using Ptr = std::unique_ptr<Spin>;
-  using Reg = RegistrySingleton<Spin>;
-
   virtual ~Spin() = default;
   /**
    * @brief Run the spin loop or waiting mechanism.
@@ -25,9 +22,6 @@ class Spin {
    */
   virtual int spin() = 0;
 };
-
-using SpinPtr = Spin::Ptr;
-using SpinReg = Spin::Reg;
 
 class WaitForSigInt : public Spin {
  public:
@@ -47,6 +41,6 @@ int spin();
 }  // namespace stepit
 
 #define STEPIT_REGISTER_SPIN(name, priority, factory) \
-  static ::stepit::SpinReg::Registration _spin_##name##_registration(#name, priority, factory)
+  static ::stepit::Spin::Registration _spin_##name##_registration(#name, priority, factory)
 
 #endif  // STEPIT_SPIN_H_

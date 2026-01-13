@@ -16,7 +16,7 @@ class Agent final : public Communication {
   explicit Agent(const std::string &robot_type, const std::vector<std::string> &ctrl_type);
   ~Agent() override { stopAgentThread(); }
 
-  void addPolicy(PolicyPtr policy);
+  void addPolicy(Policy::Ptr policy);
   int stepit();
 
   enum class State : std::uint8_t {
@@ -89,7 +89,7 @@ class Agent final : public Communication {
   State next_state_{State::kResting};
   std::size_t state_tick_{};
 
-  std::vector<PolicyPtr> policies_;
+  std::vector<Policy::Ptr> policies_;
   Policy *active_policy_{nullptr};
   std::size_t active_policy_idx_{0};
   ControlRequests policy_requests_;

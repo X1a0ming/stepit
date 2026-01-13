@@ -5,22 +5,20 @@
 
 namespace stepit {
 namespace neuro_policy {
-class Actuator : public FieldSource {
+class Actuator : public FieldSource,
+                 public Interface<Actuator, const PolicySpec & /* policy_spec */, const std::string & /* home_dir */> {
  public:
-  using Ptr = std::unique_ptr<Actuator>;
-  using Reg = RegistrySingleton<Actuator, const PolicySpec &, const std::string &>;
+  using Interface    = Interface<Actuator, const PolicySpec &, const std::string &>;
+  using Ptr          = Interface::Ptr;
+  using Registry     = Interface::Registry;
+  using Registration = Interface::Registration;
+  using Factory      = Interface::Factory;
+  using Interface::make;
+  using Interface::makeDerived;
 
   bool update(const LowState &low_state, ControlRequests &requests, FieldMap &result) override { return true; }
   virtual void setLowCmd(LowCmd &cmd, cArrXf action) = 0;
-
-  template <typename Derived>
-  static Ptr make(const PolicySpec &policy_spec, const std::string &home_dir) {
-    return std::make_unique<Derived>(policy_spec, home_dir);
-  }
 };
-
-using ActuatorPtr = Actuator::Ptr;
-using ActuatorReg = Actuator::Reg;
 
 class PositionActuator : public Actuator {
  public:
@@ -94,8 +92,7 @@ class HybridActuator : public Actuator {
 extern template class RegistrySingleton<neuro_policy::Actuator, const PolicySpec &, const std::string &>;
 }  // namespace stepit
 
-#define STEPIT_REGISTER_ACTUATOR(name, priority, factory)                                                \
-  static auto _actuator_class_##name##_registration = ::stepit::neuro_policy::ActuatorReg::Registration( \
-      #name, priority, factory)
+#define STEPIT_REGISTER_ACTUATOR(name, priority, factory) \
+  static ::stepit::neuro_policy::Actuator::Registration _actuator_##name##_registration(#name, priority, factory)
 
 #endif  // STEPIT_NEURO_POLICY_ACTUATOR_H_

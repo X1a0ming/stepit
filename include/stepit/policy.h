@@ -17,33 +17,42 @@ struct PolicySpec : RobotSpec {
   bool trusted{};
 };
 
-class Policy {
+class Policy : public Interface<Policy, const RobotSpec & /* robot_spec */, const std::string & /* home_dir */> {
  public:
-  using Ptr = std::unique_ptr<Policy>;
-  using Reg = RegistrySingleton<Policy, const RobotSpec & /* robot_spec */, const std::string & /* home_dir */>;
-
   explicit Policy(const RobotSpec &spec) : spec_(spec) {}
-  virtual ~Policy() = default;
-
   std::size_t getControlFreq() const { return spec_.control_freq; }
   std::string getName() const { return spec_.policy_name; }
   bool isTrusted() const { return spec_.trusted; }
   const PolicySpec &getSpec() const { return spec_; }
 
-  virtual bool reset()                                                                = 0;
+  /**
+   * @brief Resets the policy to its initial state.
+   *
+   * @return True if reset succeeded; otherwise, false.
+   */
+  virtual bool reset() = 0;
+  /**
+   * @brief Produce a control action based on the current low-level state.
+   *
+   * @param low_state Current low-level state information to base the control decision on.
+   * @param requests Current control requests to be replied by the policy.
+   * @param cmd Output parameter to be populated with the resulting low-level command.
+   * @return True if the action was successfully computed; otherwise false.
+   */
   virtual bool act(const LowState &low_state, ControlRequests &requests, LowCmd &cmd) = 0;
-  virtual void exit()                                                                 = 0;
+  /**
+   * @brief Shuts down the policy, releasing resources and performing any necessary finalization.
+   */
+  virtual void exit() = 0;
 
  protected:
   PolicySpec spec_;
 };
 
-using PolicyPtr = Policy::Ptr;
-using PolicyReg = Policy::Reg;
 extern template class RegistrySingleton<Policy, const RobotSpec &, const std::string &>;
 }  // namespace stepit
 
 #define STEPIT_REGISTER_POLICY(name, priority, factory) \
-  static ::stepit::PolicyReg::Registration _policy_##name##_registration(#name, priority, factory)
+  static ::stepit::Policy::Registration _policy_##name##_registration(#name, priority, factory)
 
 #endif  // STEPIT_POLICY_H_

@@ -83,16 +83,16 @@ std::future<ControlResponse> ControlInput::put(std::string request_str) {
 
 MultipleControlInputs::MultipleControlInputs(const std::vector<std::string> &input_names) {
   if (input_names.empty()) {
-    inputs_.emplace_back(CtrlInputReg::make(""));
+    inputs_.emplace_back(ControlInput::make(""));
   } else {
     for (const auto &input_name : input_names) {
-      inputs_.emplace_back(CtrlInputReg::make(input_name));
+      inputs_.emplace_back(ControlInput::make(input_name));
     }
   }
 }
 
 bool MultipleControlInputs::available() const {
-  return std::any_of(inputs_.begin(), inputs_.end(), [](const CtrlInputPtr &input) { return input->available(); });
+  return std::any_of(inputs_.begin(), inputs_.end(), [](const auto &input) { return input->available(); });
 }
 
 void MultipleControlInputs::poll() {

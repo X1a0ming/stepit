@@ -176,8 +176,8 @@ void CmdVelSource::handleControlRequest(ControlRequest request) {
   }
 }
 
-STEPIT_REGISTER_FIELD_SOURCE(cmd_vel, kDefPriority - 1, FieldSource::make<CmdVelSource>);
-STEPIT_REGISTER_SOURCE_OF_FIELD(cmd_vel, kDefPriority - 1, FieldSource::make<CmdVelSource>);
-STEPIT_REGISTER_SOURCE_OF_FIELD(cmd_stall, kDefPriority - 1, FieldSource::make<CmdVelSource>);
+STEPIT_REGISTER_FIELD_SOURCE(cmd_vel, kDefPriority - 1, FieldSource::makeDerived<CmdVelSource>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(cmd_vel, kDefPriority - 1, FieldSource::makeDerived<CmdVelSource>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(cmd_stall, kDefPriority - 1, FieldSource::makeDerived<CmdVelSource>);
 }  // namespace neuro_policy
 }  // namespace stepit

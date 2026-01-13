@@ -10,7 +10,7 @@ NeuroFieldSource::NeuroFieldSource(const std::string &name, const std::string &h
   yml::setIf(config_, "assert_all_finite", assert_all_finite_);
 
   printBanner(60, kGreen, "NeuroFieldSource {} ({})", name, run_name_);
-  nn_ = NnrtApiReg::make("", home_dir + "/" + name + ".onnx", config_);
+  nn_ = NnrtApi::make("", home_dir + "/" + name + ".onnx", config_);
 
   for (const auto &input_name : nn_->getInputNames()) {
     if (not nn_->isInputRecurrent(input_name)) input_names_.push_back(input_name);
@@ -133,8 +133,8 @@ NeuroActor::NeuroActor(const PolicySpec &, const std::string &home_dir) : NeuroF
 NeuroEstimator::NeuroEstimator(const PolicySpec &, const std::string &home_dir)
     : NeuroFieldSource("estimator", home_dir) {}
 
-STEPIT_REGISTER_FIELD_SOURCE(actor, kDefPriority, FieldSource::make<NeuroActor>);
-STEPIT_REGISTER_SOURCE_OF_FIELD(action, kDefPriority, FieldSource::make<NeuroActor>);
-STEPIT_REGISTER_FIELD_SOURCE(estimator, kDefPriority, FieldSource::make<NeuroEstimator>);
+STEPIT_REGISTER_FIELD_SOURCE(actor, kDefPriority, FieldSource::makeDerived<NeuroActor>);
+STEPIT_REGISTER_SOURCE_OF_FIELD(action, kDefPriority, FieldSource::makeDerived<NeuroActor>);
+STEPIT_REGISTER_FIELD_SOURCE(estimator, kDefPriority, FieldSource::makeDerived<NeuroEstimator>);
 }  // namespace neuro_policy
 }  // namespace stepit

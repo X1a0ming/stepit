@@ -9,12 +9,8 @@
 #include <stepit/robot.h>
 
 namespace stepit {
-class Publisher {
+class Publisher: public Interface<Publisher> {
  public:
-  using Ptr = std::unique_ptr<Publisher>;
-  using Reg = RegistrySingleton<Publisher>;
-
-  virtual ~Publisher() = default;
   static Publisher &instance();
 
   bool hasStatus(const std::string &name) const { return named_status_.find(name) != named_status_.end(); }
@@ -29,8 +25,6 @@ class Publisher {
   std::map<std::string, std::string> named_status_;
 };
 
-using PublisherPtr = Publisher::Ptr;
-using PublisherReg = Publisher::Reg;
 extern template class RegistrySingleton<Publisher>;
 
 namespace publisher {
@@ -86,6 +80,6 @@ class StatusRegistration {
 }  // namespace stepit
 
 #define STEPIT_REGISTER_PUBLISHER(name, priority, factory) \
-  static ::stepit::PublisherReg::Registration _publisher_##name##_registration(#name, priority, factory)
+  static ::stepit::Publisher::Registration _publisher_##name##_registration(#name, priority, factory)
 
 #endif  // STEPIT_PUBLISHER_H_
