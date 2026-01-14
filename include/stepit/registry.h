@@ -217,6 +217,7 @@ auto Registry<T, Args...>::Registration::operator=(Registration &&other) noexcep
 }
 
 /**
+ * @class Interface
  * @brief CRTP-style helper that equips a derived interface type with a global registry.
  *
  * This class provides:

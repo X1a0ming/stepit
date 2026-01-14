@@ -71,6 +71,7 @@ class LoggingModule {
 #define STEPIT_LOG_FORMAT_DBUG .setNextVerbosity(::stepit::kDbug)
 #define STEPIT_LOG_FORMAT_NT   .withoutTimestamp()
 
+/* Logging macros */
 #define STEPIT_LOG(...)    STEPIT_LOG_IMPL(, __VA_ARGS__)
 #define STEPIT_LOGNT(...)  STEPIT_LOG_IMPL(STEPIT_LOG_FORMAT_NT, __VA_ARGS__)
 #define STEPIT_CRIT(...)   STEPIT_LOG_IMPL(STEPIT_LOG_FORMAT_CRIT, __VA_ARGS__)

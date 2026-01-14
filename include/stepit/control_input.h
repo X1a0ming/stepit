@@ -63,17 +63,50 @@ struct ControlRequests : public std::list<ControlRequest> {
   ControlRequests filterByChannel(const std::string &channel_prefix);
 };
 
+/**
+ * @class ControlInput
+ * @brief An abstract base class defining the interface for handling control inputs.
+ *
+ * The ControlInput class serves as a standard interface for various input methods
+ * (e.g., console, joystick, publisher). It provides mechanisms to poll for new data,
+ * check availability, and retrieve control requests in a thread-safe manner.
+ */
 class ControlInput : public Interface<ControlInput> {
  public:
+  /**
+   * @brief Checks if there are any control requests available to be processed.
+   * 
+   * @return true if the internal request queue is not empty, false otherwise.
+   */
   virtual bool available() const = 0;
-  virtual void poll()            = 0;
+
+  /**
+   * @brief Polls the underlying input source for new data.
+   */
+  virtual void poll() = 0;
+
+  /**
+   * @brief Retrieves and removes the next control request from the queue.
+   * 
+   * @return A boost::optional containing the next ControlRequest if available,
+   *         or boost::none if the queue is empty.
+   */
   boost::optional<ControlRequest> pop();
 
  protected:
+  /**
+   * @brief Parses a raw string request and pushes it onto the internal queue.
+   * 
+   * @param request_str The raw string representation of the control command.
+   * @return std::future<ControlResponse> A future that will eventually contain the
+   *         result of processing this request.
+   */
   std::future<ControlResponse> put(std::string request_str);
 
  private:
+  /* Mutex to protect access to the `requests_` deque */
   std::mutex mutex_;
+  /* Queue storing pending control requests */
   std::deque<ControlRequest> requests_;
 };
 
