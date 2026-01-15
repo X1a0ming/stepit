@@ -6,5 +6,5 @@ stepit_add_plugin(${PROJECT_NAME}
     INCLUDES include
 )
 
-stepit_add_executable(nn-test app/nnrt_test.cpp)
-target_link_libraries(nn-test PRIVATE ${PROJECT_NAME})
+stepit_add_executable(nnrt_test app/nnrt_test.cpp)
+target_link_libraries(nnrt_test PRIVATE ${PROJECT_NAME})
