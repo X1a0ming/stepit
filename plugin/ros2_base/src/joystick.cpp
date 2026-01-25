@@ -21,7 +21,7 @@ Ros2Joystick::Ros2Joystick(const Keymap &keymap) : keymap_(keymap) {
       topic_name, getDefaultQoS(), [this](const sensor_msgs::msg::Joy::SharedPtr msg) { callback(msg); });
 }
 
-bool Ros2Joystick::connected() const { return connected_ and (getNode()->now() - stamp_).seconds() < 0.1; }
+bool Ros2Joystick::connected() const { return connected_ and getElapsedTime(stamp_) < 0.1; }
 
 void Ros2Joystick::getState(State &state) {
   if (not connected_) {

@@ -47,7 +47,7 @@ void CmdVelSubscriber2::twistStampedCallback(const geometry_msgs::msg::TwistStam
 bool CmdVelSubscriber2::update(const LowState &low_state, ControlRequests &requests, FieldMap &result) {
   bool subscriber_enabled = subscriber_enabled_.load(std::memory_order_acquire);
   subscribing_status_->update(subscriber_enabled ? 1 : 0);
-  if (subscriber_enabled and (getNode()->now() - cmd_vel_stamp_).seconds() < timeout_threshold_) {
+  if (subscriber_enabled and getElapsedTime(cmd_vel_stamp_) < timeout_threshold_) {
     target_cmd_vel_.x() = static_cast<float>(cmd_vel_msg_.linear.x);
     target_cmd_vel_.y() = static_cast<float>(cmd_vel_msg_.linear.y);
     target_cmd_vel_.z() = static_cast<float>(cmd_vel_msg_.angular.z);

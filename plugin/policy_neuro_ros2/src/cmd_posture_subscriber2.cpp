@@ -42,7 +42,7 @@ bool CmdRollSubscriber2::update(const LowState &low_state, ControlRequests &requ
   subscribing_status_->update(subscriber_enabled ? 1 : 0);
   if (subscriber_enabled) {
     std::lock_guard<std::mutex> lock(mutex_);
-    if ((getNode()->now() - cmd_roll_stamp_).seconds() < timeout_threshold_) {
+    if (getElapsedTime(cmd_roll_stamp_) < timeout_threshold_) {
       cmd_roll_ = clamp(cmd_roll_msg_, -1.0F, 1.0F) * roll_scale_factor_;
     } else {
       cmd_roll_ = 0.0F;
@@ -147,7 +147,7 @@ bool CmdPitchSubscriber2::update(const LowState &low_state, ControlRequests &req
   subscribing_status_->update(subscriber_enabled ? 1 : 0);
   if (subscriber_enabled) {
     std::lock_guard<std::mutex> lock(mutex_);
-    if ((getNode()->now() - cmd_pitch_stamp_).seconds() < timeout_threshold_) {
+    if (getElapsedTime(cmd_pitch_stamp_) < timeout_threshold_) {
       cmd_pitch_ = clamp(cmd_pitch_msg_, -1.0F, 1.0F) * pitch_scale_factor_;
     } else {
       cmd_pitch_ = 0.0F;
@@ -253,7 +253,7 @@ bool CmdHeightSubscriber2::update(const LowState &low_state, ControlRequests &re
   subscribing_status_->update(subscriber_enabled ? 1 : 0);
   if (subscriber_enabled) {
     std::lock_guard<std::mutex> lock(mutex_);
-    if ((getNode()->now() - cmd_height_stamp_).seconds() < timeout_threshold_) {
+    if (getElapsedTime(cmd_height_stamp_) < timeout_threshold_) {
       cmd_height_ = clamp(cmd_height_msg_ + default_cmd_height_, height_range_);
     } else {
       cmd_height_ = default_cmd_height_;

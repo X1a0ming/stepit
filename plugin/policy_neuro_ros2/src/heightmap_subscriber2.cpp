@@ -272,7 +272,7 @@ bool HeightmapSubscriber2::checkAllReady() {
     return subscriber_enabled_ = false;
   }
 
-  double map_lag   = (getNode()->now() - map_stamp_).seconds();
+  double map_lag   = getElapsedTime(map_stamp_);
   bool map_timeout = map_lag > map_timeout_threshold_;
   if (map_timeout) {
     if (not map_timeout_) {
@@ -289,7 +289,7 @@ bool HeightmapSubscriber2::checkAllReady() {
     STEPIT_INFO(error_msg_);
   }
 
-  double loc_lag   = (getNode()->now() - loc_msg_.header.stamp).seconds();
+  double loc_lag   = getElapsedTime(loc_msg_.header.stamp);
   bool loc_timeout = loc_lag > loc_timeout_threshold_;
   if (loc_timeout) {
     if (not loc_timeout_) {

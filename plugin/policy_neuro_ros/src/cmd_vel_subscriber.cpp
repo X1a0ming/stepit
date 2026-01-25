@@ -28,7 +28,7 @@ bool CmdVelSubscriber::update(const LowState &low_state, ControlRequests &reques
   subscribing_status_->update(subscriber_enabled ? 1 : 0);
   if (subscriber_enabled) {
     std::lock_guard<std::mutex> lock(mutex_);
-    if ((ros::Time::now() - cmd_vel_stamp_).toSec() < timeout_threshold_) {
+    if (getElapsedTime(cmd_vel_stamp_) < timeout_threshold_) {
       target_cmd_vel_.x() = cmd_vel_msg_.linear.x;
       target_cmd_vel_.y() = cmd_vel_msg_.linear.y;
       target_cmd_vel_.z() = cmd_vel_msg_.angular.z;
