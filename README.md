@@ -23,7 +23,7 @@ git clone https://github.com/chengruiz/stepit.git src/stepit
 
 ```shell
 # In the stepit_ws directory
-cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install -Ssrc/stepit
+cmake -Bbuild -Ssrc/stepit -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install
 cmake --build build -j && cmake --install build
 ```
 
