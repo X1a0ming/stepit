@@ -4,8 +4,6 @@
 #include <map>
 #include <mutex>
 
-#include <boost/optional.hpp>
-
 #include <stepit/control_input.h>
 #include <stepit/registry.h>
 #include <stepit/joystick/state.h>
@@ -25,7 +23,7 @@ class JoystickControl : public ControlInput {
   void poll() override;
 
   class Registration;
-  using Rule = std::function<boost::optional<std::string>(const State &)>;
+  using Rule = std::function<std::string(const State &)>;
 
  protected:
   Joystick::Ptr js_;

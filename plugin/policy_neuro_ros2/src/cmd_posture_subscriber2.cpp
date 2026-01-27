@@ -30,9 +30,8 @@ CmdRollSubscriber2::CmdRollSubscriber2(const PolicySpec &policy_spec, const std:
 bool CmdRollSubscriber2::reset() {
   subscriber_enabled_.store(default_subscriber_enabled_, std::memory_order_relaxed);
   subscribing_status_ = publisher::StatusRegistration::make("Policy/CmdRoll/Subscribing");
-  js_rules_.emplace_back([](const joystick::State &js) {
-    return js.LB().pressed and js.A().on_press ? boost::optional<std::string>("Policy/CmdRoll/SwitchSubscriber")
-                                               : boost::none;
+  joystick_rules_.emplace_back([](const joystick::State &js) -> std::string {
+    return js.LB().pressed and js.A().on_press ? "Policy/CmdRoll/SwitchSubscriber" : "";
   });
   return CmdRollSource::reset();
 }
@@ -135,9 +134,8 @@ CmdPitchSubscriber2::CmdPitchSubscriber2(const PolicySpec &policy_spec, const st
 bool CmdPitchSubscriber2::reset() {
   subscriber_enabled_.store(default_subscriber_enabled_, std::memory_order_relaxed);
   subscribing_status_ = publisher::StatusRegistration::make("Policy/CmdPitch/Subscribing");
-  js_rules_.emplace_back([](const joystick::State &js) {
-    return js.LB().pressed and js.A().on_press ? boost::optional<std::string>("Policy/CmdPitch/SwitchSubscriber")
-                                               : boost::none;
+  joystick_rules_.emplace_back([](const joystick::State &js) -> std::string {
+    return js.LB().pressed and js.A().on_press ? "Policy/CmdPitch/SwitchSubscriber" : "";
   });
   return CmdPitchSource::reset();
 }
@@ -241,9 +239,8 @@ CmdHeightSubscriber2::CmdHeightSubscriber2(const PolicySpec &policy_spec, const 
 bool CmdHeightSubscriber2::reset() {
   subscriber_enabled_.store(default_subscriber_enabled_, std::memory_order_relaxed);
   subscribing_status_ = publisher::StatusRegistration::make("Policy/CmdHeight/Subscribing");
-  js_rules_.emplace_back([](const joystick::State &js) {
-    return js.LB().pressed and js.A().on_press ? boost::optional<std::string>("Policy/CmdHeight/SwitchSubscriber")
-                                               : boost::none;
+  joystick_rules_.emplace_back([](const joystick::State &js) -> std::string {
+    return js.LB().pressed and js.A().on_press ? "Policy/CmdHeight/SwitchSubscriber" : "";
   });
   return CmdHeightSource::reset();
 }

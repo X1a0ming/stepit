@@ -99,9 +99,8 @@ bool HeightmapSubscriber2::reset() {
   error_msg_.clear();
   subscribing_status_ = publisher::StatusRegistration::make("Policy/Heightmap/Subscribing");
   error_msg_status_   = publisher::StatusRegistration::make("Policy/Heightmap/ErrorMessage");
-  js_rules_.emplace_back([](const joystick::State &js) {
-    return js.LB().pressed and js.B().on_press ? boost::optional<std::string>("Policy/Heightmap/SwitchSubscriber")
-                                               : boost::none;
+  joystick_rules_.emplace_back([](const joystick::State &js) -> std::string {
+    return js.LB().pressed and js.B().on_press ? "Policy/Heightmap/SwitchSubscriber" : "";
   });
   return true;
 }
@@ -181,7 +180,7 @@ bool HeightmapSubscriber2::update(const LowState &low_state, ControlRequests &re
 
 void HeightmapSubscriber2::exit() {
   DummyHeightmapSource::exit();
-  js_rules_.clear();
+  joystick_rules_.clear();
   subscribing_status_.reset();
   error_msg_status_.reset();
 }
