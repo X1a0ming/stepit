@@ -27,7 +27,7 @@ class CmdRollSource : public FieldSource {
 
   YAML::Node config_;
   FieldId cmd_roll_id_{};
-  std::vector<JoystickControl::Registration> joystick_rules_;
+  std::vector<JoystickRule> joystick_rules_;
 
   float roll_scale_factor_{M_PI / 6};
   bool joystick_enabled_{true};
@@ -56,7 +56,7 @@ class CmdPitchSource : public FieldSource {
 
   YAML::Node config_;
   FieldId cmd_pitch_id_{};
-  std::vector<JoystickControl::Registration> joystick_rules_;
+  std::vector<JoystickRule> joystick_rules_;
 
   float pitch_scale_factor_{M_PI / 6};
   bool joystick_enabled_{true};
@@ -86,7 +86,7 @@ class CmdHeightSource : public FieldSource {
 
   YAML::Node config_;
   FieldId cmd_height_id_{};
-  std::vector<JoystickControl::Registration> joystick_rules_;
+  std::vector<JoystickRule> joystick_rules_;
 
   float default_cmd_height_{1.0F};
   float height_scale_factor_{0.05};
