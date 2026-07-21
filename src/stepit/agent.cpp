@@ -274,10 +274,10 @@ void Agent::stepStateMachine() {
 }
 
 void Agent::trySwitchState(State next_state) {
-  if (spec().safety.enabled and next_state > State::kResting and
+  const auto &orientation_limit = spec().safety.orientation_limit;
+  if (orientation_limit.enabled and next_state > State::kResting and
       not(next_state == State::kPolicy and isActivePolicyTrusted())) {
-    LowState low_state{communication_.getLowState()};
-    if (std::abs(low_state.imu.rpy[0]) > spec().safety.roll or std::abs(low_state.imu.rpy[1]) > spec().safety.pitch) {
+    if (orientation_limit.isViolated(communication_.getLowState())) {
       next_state = State::kFrozen;
       STEPIT_WARN("Agent froze due to safety violations.");
     }

@@ -22,12 +22,7 @@ RobotSpec::RobotSpec(const yml::Node &config) {
   config[config.getDefinedKey({"damping", "kd", "Kd"})].to(kd);
   config["stuck_threshold"].to(stuck_threshold, true);
 
-  const auto safety_node = config["safety"];
-  if (safety_node.hasValue()) {
-    safety_node["enabled"].to(safety.enabled, true);
-    safety_node["roll"].to(safety.roll, true);
-    safety_node["pitch"].to(safety.pitch, true);
-  }
+  safety.load(config["safety"], dof);
 
   config["resetting_time"].to(resetting_time, true);
   config["standing_up_time"].to(standing_up_time, true);
@@ -48,7 +43,7 @@ RobotSpec::RobotSpec(const yml::Node &config) {
 
 template <typename T>
 void reorderInplace(std::vector<T> &values, const std::vector<std::size_t> &order, const char *name) {
-  if (order.empty()) return;
+  if (values.empty() or order.empty()) return;
   STEPIT_ASSERT_EQ(values.size(), order.size(), "{} size mismatch.", name);
   std::vector<T> reordered(values.size());
   for (std::size_t i{}; i < order.size(); ++i) {
@@ -77,6 +72,7 @@ RobotApiReorderingWrapper::RobotApiReorderingWrapper(const std::string &exposed_
   reorderInplace(spec_.kp, joint_order_, "kp");
   reorderInplace(spec_.kd, joint_order_, "kd");
   reorderInplace(spec_.stuck_threshold, joint_order_, "stuck_threshold");
+  reorderInplace(spec_.safety.negative_joint_power_limit.limits, joint_order_, "negative_joint_power_limit.limits");
   reorderInplace(spec_.standing_cfg, joint_order_, "standing_cfg");
   reorderInplace(spec_.lying_cfg, joint_order_, "lying_cfg");
   for (std::size_t i{}; i < getDoF(); ++i) {

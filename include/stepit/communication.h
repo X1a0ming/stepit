@@ -114,6 +114,8 @@ class Communication final {
   void mainLoop();
   /** Executes one receive/update/send communication cycle. */
   void mainEvent();
+  /** Replaces a command buffer with the configured damped-mode command. */
+  void setDampedCommand(LowCmd &low_cmd) const;
 
   RobotApi::Ptr api_;
   std::thread main_loop_thread_;
@@ -130,6 +132,7 @@ class Communication final {
   std::mutex mutex_;
   LowState low_state_;
   LowCmd low_cmd_;
+  LowCmd actual_low_cmd_;
 };
 }  // namespace stepit
 

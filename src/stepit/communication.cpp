@@ -78,8 +78,12 @@ Communication::Communication(const std::string &robot_factory)
       dof_{api_->getDoF()},
       freq_{api_->getCommFreq()},
       low_state_(api_->getDoF(), api_->getNumLegs()),
-      low_cmd_(api_->getDoF()) {
+      low_cmd_(api_->getDoF()),
+      actual_low_cmd_(api_->getDoF()) {
   api_->getControl(true);
+  if (spec().safety.negative_joint_power_limit.enabled) {
+    STEPIT_LOG("Negative joint power limit enabled.");
+  }
 }
 
 Communication::~Communication() {
@@ -154,23 +158,33 @@ void Communication::mainEvent() {
     api_->getRecv(low_state_);
     connected_ = low_state_.tick != 0;
     if (frozen_) active_ = false;
+
+    const auto &negative_joint_power_limit = spec().safety.negative_joint_power_limit;
+    actual_low_cmd_ = low_cmd_;
+
     if (not active_) {
-      for (auto &motor_cmd : low_cmd_) {
-        motor_cmd.q   = 0.;
-        motor_cmd.dq  = 0.;
-        motor_cmd.tor = 0.;
-        motor_cmd.Kp  = 0.;
-        motor_cmd.Kd  = spec().kd_damped_mode;
-      }
+      setDampedCommand(actual_low_cmd_);
+    } else if (negative_joint_power_limit.enabled) {
+      negative_joint_power_limit.apply(low_state_, low_cmd_, actual_low_cmd_);
     }
-    api_->setSend(low_cmd_);
+    api_->setSend(actual_low_cmd_);
   }
   if (active_ or not spec().auto_damped_mode) api_->send();
   {
     std::lock_guard<std::mutex> _(mutex_);
-    publisher::publishLowLevel(spec(), low_state_, low_cmd_);
+    publisher::publishLowLevel(spec(), low_state_, actual_low_cmd_);
   }
   tick_.fetch_add(1, std::memory_order_release);
+}
+
+void Communication::setDampedCommand(LowCmd &low_cmd) const {
+  for (auto &motor_cmd : low_cmd) {
+    motor_cmd.q   = 0.0F;
+    motor_cmd.dq  = 0.0F;
+    motor_cmd.tor = 0.0F;
+    motor_cmd.Kp  = 0.0F;
+    motor_cmd.Kd  = spec().kd_damped_mode;
+  }
 }
 
 void Communication::waitUntil(std::size_t tick) const {

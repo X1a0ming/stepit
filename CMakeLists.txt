@@ -58,6 +58,7 @@ add_library(stepit_core SHARED
     src/stepit/plugin.cpp
     src/stepit/publisher.cpp
     src/stepit/robot.cpp
+    src/stepit/safety.cpp
     src/stepit/spin.cpp
     src/stepit/utils.cpp
 )
@@ -78,6 +79,7 @@ target_sources(stepit_core
         include/stepit/publisher.h
         include/stepit/registry.h
         include/stepit/robot.h
+        include/stepit/safety.h
         include/stepit/spin.h
         include/stepit/utils.h
 )

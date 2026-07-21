@@ -7,6 +7,7 @@
 #include <vector>
 
 #include <stepit/registry.h>
+#include <stepit/safety.h>
 #include <stepit/utils.h>
 
 namespace stepit {
@@ -59,7 +60,9 @@ struct MotorCmd {
 };
 
 /** Whole-body low-level command sent to the robot. */
-using LowCmd = std::vector<MotorCmd>;
+struct LowCmd : std::vector<MotorCmd> {
+  using std::vector<MotorCmd>::vector;
+};
 
 struct RobotSpec {
   RobotSpec() = default;
@@ -85,14 +88,7 @@ struct RobotSpec {
   /** Maximum allowed joint position deviation when following fixed trajectories, in radians. */
   std::vector<float> stuck_threshold;
 
-  struct Safety {
-    /** Whether to freeze the robot when safety violations are detected. */
-    bool enabled{true};
-    /** Maximum allowed roll angle in radians. */
-    float roll{M_PIf / 2};
-    /** Maximum allowed pitch angle in radians. */
-    float pitch{M_PIf / 2};
-  } safety;
+  Safety safety;
 
   float resetting_time{0.8};
   float standing_up_time{1.2};
