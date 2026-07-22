@@ -49,6 +49,10 @@ class Nnrt : public Interface<Nnrt, const std::string & /* path */, const yml::N
   std::size_t getNumInputs() const { return num_in_; }
   const std::vector<std::string> &getInputNames() const { return in_names_; }
   const std::string &getInputName(std::size_t idx) const { return in_names_[idx]; }
+  const std::vector<int64_t> &getInputShape(const std::string &name) const {
+    return getInputShape(getInputIndex(name, true));
+  }
+  const std::vector<int64_t> &getInputShape(std::size_t idx) const { return in_shapes_[idx]; }
   bool hasInput(const std::string &name) const { return getInputIndex(name) != static_cast<std::size_t>(-1); }
   std::size_t getInputIndex(const std::string &name, bool assert = false) const;
   std::size_t getInputSize(const std::string &name) const { return getInputSize(getInputIndex(name, true)); }
@@ -75,6 +79,10 @@ class Nnrt : public Interface<Nnrt, const std::string & /* path */, const yml::N
   std::size_t getNumOutputs() const { return num_out_; }
   const std::vector<std::string> &getOutputNames() const { return out_names_; }
   const std::string &getOutputName(std::size_t idx) const { return out_names_[idx]; }
+  const std::vector<int64_t> &getOutputShape(const std::string &name) const {
+    return getOutputShape(getOutputIndex(name, true));
+  }
+  const std::vector<int64_t> &getOutputShape(std::size_t idx) const { return out_shapes_[idx]; }
   bool hasOutput(const std::string &name) const { return getOutputIndex(name) != static_cast<std::size_t>(-1); }
   std::size_t getOutputIndex(const std::string &name, bool assert = false) const;
   std::size_t getOutputSize(const std::string &name) const { return getOutputSize(getOutputIndex(name, true)); }
