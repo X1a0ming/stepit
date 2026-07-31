@@ -155,10 +155,6 @@ bool NeuroPolicy::act(const LowState &low_state, ControlRequests &requests, LowC
 }
 
 void NeuroPolicy::postAct() {
-  for (const auto &module : resolved_modules_) {
-    module->postStep(context_);
-  }
-
   if (publish_fields_) {
     for (const auto &it : context_) {
       if (published_fields_.empty() or published_fields_.find(it.first) != published_fields_.end()) {
@@ -166,6 +162,8 @@ void NeuroPolicy::postAct() {
       }
     }
   }
+
+  for (const auto &module : resolved_modules_) module->postStep(context_);
 }
 
 void NeuroPolicy::exit() {
