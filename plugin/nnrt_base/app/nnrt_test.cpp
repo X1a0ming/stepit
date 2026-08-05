@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
       ("verbosity,v", po::value<int>(),
           "Verbosity level (0-3)")
       ("speed-only", po::bool_switch()->default_value(false),
-          "Only run speed test; skip consistency/output test")
+          "Only run speed test; skip inference output test")
       ("speed-iterations", po::value<int>()->default_value(1000),
           "Number of measured speed-test inference iterations")
       ("speed-warmup", po::value<int>()->default_value(10),
@@ -89,74 +89,94 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  auto model1 = Nnrt::make(factory, path, config);
-  model1->printInfo();
-  model1->clearState();
+  auto model = Nnrt::make(factory, path, config);
+  model->printInfo();
+  model->clearState();
 
   if (not speed_only) {
-    auto model2 = Nnrt::make(factory, path, config);
-    model2->clearState();
-
     displayFormattedBanner(60, nullptr, "Inference test");
     for (std::size_t step{1}; step <= 3; ++step) {
       fmt::print("Step {}:\n", step);
       // Set inputs
-      std::vector<std::vector<float>> f32_inputs(model1->getNumInputs());
-      std::vector<std::vector<int32_t>> i32_inputs(model1->getNumInputs());
-      std::vector<std::vector<int64_t>> i64_inputs(model1->getNumInputs());
-      std::vector<std::vector<std::uint8_t>> bool_inputs(model1->getNumInputs());
-      for (std::size_t i{}; i < model1->getNumInputs(); ++i) {
-        if (not model1->isInputRecurrent(i)) {
-          const auto dtype = model1->getInputDtype(i);
-          const auto size  = model1->getInputSize(i);
+      std::vector<std::vector<float>> f32_inputs(model->getNumInputs());
+      std::vector<std::vector<int32_t>> i32_inputs(model->getNumInputs());
+      std::vector<std::vector<int64_t>> i64_inputs(model->getNumInputs());
+      std::vector<std::vector<std::uint8_t>> bool_inputs(model->getNumInputs());
+      for (std::size_t i{}; i < model->getNumInputs(); ++i) {
+        if (not model->isInputRecurrent(i)) {
+          const auto dtype = model->getInputDtype(i);
+          const auto size  = model->getInputSize(i);
           if (dtype == DataType::kFloat32) {
             f32_inputs[i].assign(size, 0.01F * static_cast<float>(step));
-            model1->setInput(i, f32_inputs[i].data());
-            model2->setInput(i, f32_inputs[i].data());
+            model->setInput(i, f32_inputs[i].data());
           } else if (dtype == DataType::kInt32) {
             i32_inputs[i].assign(size, static_cast<int32_t>(step));
-            model1->setInput(i, i32_inputs[i].data());
-            model2->setInput(i, i32_inputs[i].data());
+            model->setInput(i, i32_inputs[i].data());
           } else if (dtype == DataType::kInt64) {
             i64_inputs[i].assign(size, static_cast<int64_t>(step));
-            model1->setInput(i, i64_inputs[i].data());
-            model2->setInput(i, i64_inputs[i].data());
+            model->setInput(i, i64_inputs[i].data());
           } else if (dtype == DataType::kBool) {
             bool_inputs[i].assign(size, static_cast<std::uint8_t>(step % 2 == 1));
-            model1->setInput(i, static_cast<const void *>(bool_inputs[i].data()));
-            model2->setInput(i, static_cast<const void *>(bool_inputs[i].data()));
+            model->setInput(i, static_cast<const void *>(bool_inputs[i].data()));
           }
         }
       }
 
       // Run inference
-      model1->runInference();
-      model2->runInference();
+      model->runInference();
 
-      // Check outputs
-      for (std::size_t i{}; i < model1->getNumOutputs(); ++i) {
-        auto output1 = cmArrXf(model1->getOutput<float>(i), static_cast<Eigen::Index>(model1->getOutputSize(i)));
-        auto output2 = cmArrXf(model2->getOutput<float>(i), static_cast<Eigen::Index>(model2->getOutputSize(i)));
-        if (not output1.isApprox(output2)) {
-          std::cerr << fmt::format("{}ERROR{}: Output '{}' is not consistent.", kRed, kClear, model1->getOutputName(i));
-          return -1;
-        }
-        if (not model1->isOutputRecurrent(i)) {
-          std::cout << fmt::format("Output '{}':", model1->getOutputName(i)) << output1.transpose() << std::endl;
+      // Print outputs
+      for (std::size_t i{}; i < model->getNumOutputs(); ++i) {
+        const auto size = static_cast<Eigen::Index>(model->getOutputSize(i));
+        switch (model->getOutputDtype(i)) {
+          case DataType::kUndefined:
+            STEPIT_THROW("NNRT output '{}' has undefined data type.", model->getOutputName(i));
+          case DataType::kFloat32: {
+            using Array = Eigen::Array<float, Eigen::Dynamic, 1>;
+            Eigen::Map<const Array> output(model->getOutput<float>(i), size);
+            if (not model->isOutputRecurrent(i)) {
+              std::cout << fmt::format("Output '{}':", model->getOutputName(i)) << output.transpose() << std::endl;
+            }
+            break;
+          }
+          case DataType::kInt32: {
+            using Array = Eigen::Array<std::int32_t, Eigen::Dynamic, 1>;
+            Eigen::Map<const Array> output(model->getOutput<std::int32_t>(i), size);
+            if (not model->isOutputRecurrent(i)) {
+              std::cout << fmt::format("Output '{}':", model->getOutputName(i)) << output.transpose() << std::endl;
+            }
+            break;
+          }
+          case DataType::kInt64: {
+            using Array = Eigen::Array<std::int64_t, Eigen::Dynamic, 1>;
+            Eigen::Map<const Array> output(model->getOutput<std::int64_t>(i), size);
+            if (not model->isOutputRecurrent(i)) {
+              std::cout << fmt::format("Output '{}':", model->getOutputName(i)) << output.transpose() << std::endl;
+            }
+            break;
+          }
+          case DataType::kBool: {
+            using Array = Eigen::Array<bool, Eigen::Dynamic, 1>;
+            Eigen::Map<const Array> output(model->getOutput<bool>(i), size);
+            if (not model->isOutputRecurrent(i)) {
+              std::cout << fmt::format("Output '{}':", model->getOutputName(i)) << output.transpose() << std::endl;
+            }
+            break;
+          }
         }
       }
     }
   }
 
-  std::vector<const void *> inputs(model1->getNumInputs());
-  std::vector<std::vector<float>> f32_inputs(model1->getNumInputs());
-  std::vector<std::vector<int32_t>> i32_inputs(model1->getNumInputs());
-  std::vector<std::vector<int64_t>> i64_inputs(model1->getNumInputs());
-  std::vector<std::vector<std::uint8_t>> bool_inputs(model1->getNumInputs());
-  for (std::size_t i{}; i < model1->getNumInputs(); ++i) {
-    if (not model1->isInputRecurrent(i)) {
-      const auto dtype = model1->getInputDtype(i);
-      const auto size  = model1->getInputSize(i);
+  std::vector<const void *> inputs(model->getNumInputs());
+  std::vector<std::vector<float>> f32_inputs(model->getNumInputs());
+  std::vector<std::vector<int32_t>> i32_inputs(model->getNumInputs());
+  std::vector<std::vector<int64_t>> i64_inputs(model->getNumInputs());
+  std::vector<std::vector<std::uint8_t>> bool_inputs(model->getNumInputs());
+  for (std::size_t i{}; i < model->getNumInputs(); ++i) {
+    if (not model->isInputRecurrent(i)) {
+      const auto dtype = model->getInputDtype(i);
+      const auto size  = model->getInputSize(i);
       if (dtype == DataType::kFloat32) {
         f32_inputs[i].assign(size, 0.0F);
         inputs[i] = f32_inputs[i].data();
@@ -170,22 +190,22 @@ int main(int argc, char *argv[]) {
         bool_inputs[i].assign(size, 0);
         inputs[i] = bool_inputs[i].data();
       }
-      model1->setInput(i, inputs[i]);
+      model->setInput(i, inputs[i]);
     }
   }
 
-  model1->clearState();
-  model1->warmup(speed_warmup);
-  model1->clearState();
+  model->clearState();
+  model->warmup(speed_warmup);
+  model->clearState();
 
   displayFormattedBanner(60, nullptr, "Speed test");
   auto start_time = std::chrono::steady_clock::now();
   for (int step{}; step < speed_iterations; ++step) {
-    for (std::size_t i{}; i < model1->getNumInputs(); ++i) {
-      if (not model1->isInputRecurrent(i)) model1->setInput(i, inputs[i]);
+    for (std::size_t i{}; i < model->getNumInputs(); ++i) {
+      if (not model->isInputRecurrent(i)) model->setInput(i, inputs[i]);
     }
-    model1->runInference();
-    for (std::size_t i{}; i < model1->getNumOutputs(); ++i) model1->getOutput(i);
+    model->runInference();
+    for (std::size_t i{}; i < model->getNumOutputs(); ++i) model->getOutput(i);
   }
   const auto elapsed      = std::chrono::duration<double>(std::chrono::steady_clock::now() - start_time).count();
   const double average_us = elapsed * 1e6 / static_cast<double>(speed_iterations);

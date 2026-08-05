@@ -5,34 +5,11 @@
 #include <string>
 #include <vector>
 
+#include <stepit/data_type.h>
 #include <stepit/logging.h>
 #include <stepit/registry.h>
 
 namespace stepit {
-enum class DataType { kFloat32, kInt32, kInt64, kBool };
-
-std::size_t dataTypeSize(DataType dtype);
-const char *dataTypeName(DataType dtype);
-
-template <typename T>
-struct DataTypeTrait;
-template <>
-struct DataTypeTrait<float> {
-  static constexpr DataType value = DataType::kFloat32;
-};
-template <>
-struct DataTypeTrait<int32_t> {
-  static constexpr DataType value = DataType::kInt32;
-};
-template <>
-struct DataTypeTrait<int64_t> {
-  static constexpr DataType value = DataType::kInt64;
-};
-template <>
-struct DataTypeTrait<bool> {
-  static constexpr DataType value = DataType::kBool;
-};
-
 class Nnrt : public Interface<Nnrt, const std::string & /* path */, const yml::Node & /* config */> {
  public:
   Nnrt(const std::string &path, const yml::Node &config);
@@ -111,12 +88,14 @@ class Nnrt : public Interface<Nnrt, const std::string & /* path */, const yml::N
 
  protected:
   void addInput(std::string name, std::vector<int64_t> shape, int64_t size, DataType dtype) {
+    STEPIT_ASSERT(dataTypeSize(dtype) > 0, "NNRT input '{}' has invalid or undefined data type.", name);
     in_names_.emplace_back(std::move(name));
     in_shapes_.emplace_back(std::move(shape));
     in_sizes_.push_back(size);
     in_dtypes_.push_back(dtype);
   }
   void addOutput(std::string name, std::vector<int64_t> shape, int64_t size, DataType dtype) {
+    STEPIT_ASSERT(dataTypeSize(dtype) > 0, "NNRT output '{}' has invalid or undefined data type.", name);
     out_names_.emplace_back(std::move(name));
     out_shapes_.emplace_back(std::move(shape));
     out_sizes_.push_back(size);

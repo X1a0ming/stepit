@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <cstring>
 #include <iostream>
 #include <sstream>
 
@@ -8,34 +7,6 @@
 #include <stepit/nnrt/nnrt.h>
 
 namespace stepit {
-std::size_t dataTypeSize(DataType dtype) {
-  switch (dtype) {
-    case DataType::kFloat32:
-      return 4;
-    case DataType::kInt32:
-      return 4;
-    case DataType::kInt64:
-      return 8;
-    case DataType::kBool:
-      return 1;
-  }
-  return 0;
-}
-
-const char *dataTypeName(DataType dtype) {
-  switch (dtype) {
-    case DataType::kFloat32:
-      return "float32";
-    case DataType::kInt32:
-      return "int32";
-    case DataType::kInt64:
-      return "int64";
-    case DataType::kBool:
-      return "bool";
-  }
-  return "unknown";
-}
-
 std::string shape2str(const std::vector<int64_t> &shape) {
   std::stringstream ss;
   ss << "[" << shape[0];
@@ -131,6 +102,12 @@ void Nnrt::postInit() {
     STEPIT_ASSERT(in_shapes_[in_idx] == out_shapes_[out_idx],
                   "Recurrent parameter shape mismatch: '{}' ({}) vs '{}' ({}).", recur_params_[i].first,
                   shape2str(in_shapes_[in_idx]), recur_params_[i].second, shape2str(out_shapes_[out_idx]));
+    STEPIT_ASSERT(in_dtypes_[in_idx] == out_dtypes_[out_idx],
+                  "Recurrent parameter dtype mismatch: '{}' ({}) vs '{}' ({}).", recur_params_[i].first,
+                  dataTypeName(in_dtypes_[in_idx]), recur_params_[i].second, dataTypeName(out_dtypes_[out_idx]));
+    STEPIT_ASSERT(getInputBytes(in_idx) == getOutputBytes(out_idx),
+                  "Recurrent parameter byte size mismatch: '{}' ({} bytes) vs '{}' ({} bytes).", recur_params_[i].first,
+                  getInputBytes(in_idx), recur_params_[i].second, getOutputBytes(out_idx));
     in_recur_[in_idx]   = true;
     out_recur_[out_idx] = true;
     recur_param_indices_.emplace_back(in_idx, out_idx);

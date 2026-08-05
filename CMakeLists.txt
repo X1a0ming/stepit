@@ -54,6 +54,7 @@ add_library(stepit_core SHARED
     src/stepit/agent.cpp
     src/stepit/communication.cpp
     src/stepit/control_input.cpp
+    src/stepit/data_type.cpp
     src/stepit/logging.cpp
     src/stepit/plugin.cpp
     src/stepit/publisher.cpp
@@ -73,6 +74,7 @@ target_sources(stepit_core
         include/stepit/agent.h
         include/stepit/communication.h
         include/stepit/control_input.h
+        include/stepit/data_type.h
         include/stepit/logging.h
         include/stepit/plugin.h
         include/stepit/policy.h

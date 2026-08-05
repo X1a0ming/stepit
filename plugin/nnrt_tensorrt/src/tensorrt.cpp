@@ -244,7 +244,9 @@ bool TensorRt::build(const std::string &onnx_path, const std::string &engine_pat
     STEPIT_WARNNT(
         "TensorRT 10.12+ builds the ONNX model with strongly typed mode for 'precision: fp16'. Use an FP16 ONNX model "
         "or a prebuilt FP16 engine if you require FP16 inference.");
+#if !TENSORRT_VERSION_AT_LEAST(11, 0, 0)
     flags |= 1U << static_cast<uint32_t>(nvinfer1::NetworkDefinitionCreationFlag::kSTRONGLY_TYPED);
+#endif
   }
 #endif
 
