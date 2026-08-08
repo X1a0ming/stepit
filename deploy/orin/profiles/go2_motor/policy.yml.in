@@ -1,0 +1,24 @@
+name: @POLICY_NAME@
+control_freq: 50
+tailored: go2
+trusted: false
+actuator:
+  type: position
+  Kp: 25.0
+  Kd: 0.5
+  bias: [-0.1, 0.8, -1.5, 0.1, 0.8, -1.5, -0.1, 1.0, -1.5, 0.1, 1.0, -1.5]
+  scale: [0.125, 0.25, 0.25, 0.125, 0.25, 0.25, 0.125, 0.25, 0.25, 0.125, 0.25, 0.25]
+  command_lower: [-1.0472, -1.5708, -2.7227, -1.0472, -1.5708, -2.7227, -1.0472, -0.5236, -2.7227, -1.0472, -0.5236, -2.7227]
+  command_upper: [1.0472, 3.4907, -0.83776, 1.0472, 3.4907, -0.83776, 1.0472, 4.5379, -0.83776, 1.0472, 4.5379, -0.83776]
+action_mean: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+modules:
+  - joint_graph_path_subscriber@field_subscriber
+  - proprioceptor
+  - joint_graph_observation
+  - actor
+  - joint_graph_motor_action@field_ops
+  - joint_graph_action_reordering@action_reordering
+publish_fields: [joint_graph_cmd_vel]
+run:
+  variant: @VARIANT@
+  profile: go2_motor

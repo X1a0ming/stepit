@@ -1,8 +1,10 @@
 #ifndef STEPIT_ROBOT_UNITREE2_QUADRUPED_H_
 #define STEPIT_ROBOT_UNITREE2_QUADRUPED_H_
 
+#include <array>
 #include <memory>
 #include <mutex>
+#include <set>
 
 #include <unitree/idl/go2/LowCmd_.hpp>
 #include <unitree/idl/go2/LowState_.hpp>
@@ -31,6 +33,20 @@ class UnitreeQuadrupedApi : public RobotApi {
       motor_cmd.kd()   = 0;
       motor_cmd.tau()  = 0;
     }
+    std::set<std::size_t> mapped_indices;
+    for (std::size_t i{}; i < getDoF(); ++i) {
+      const auto motor_index = Spec::motorIndex(i);
+      STEPIT_ASSERT(motor_index < low_cmd_.motor_cmd().size(),
+                    "Robot '{}' maps joint {} to out-of-range DDS motor index {}.",
+                    Spec::robotName(), i, motor_index);
+      STEPIT_ASSERT(mapped_indices.insert(motor_index).second,
+                    "Robot '{}' maps more than one joint to DDS motor index {}.",
+                    Spec::robotName(), motor_index);
+      const float direction = Spec::motorDirection(i);
+      STEPIT_ASSERT(direction == -1.0F or direction == 1.0F,
+                    "Robot '{}' motor direction at joint {} must be -1 or 1.",
+                    Spec::robotName(), i);
+    }
   }
 
   void getControl(bool enable) override {
@@ -47,11 +63,13 @@ class UnitreeQuadrupedApi : public RobotApi {
 
   void setSend(const LowCmd &cmd_msg) override {
     for (std::size_t i{}; i < getDoF(); ++i) {
-      low_cmd_.motor_cmd()[i].q()   = cmd_msg[i].q;
-      low_cmd_.motor_cmd()[i].dq()  = cmd_msg[i].dq;
-      low_cmd_.motor_cmd()[i].kp()  = cmd_msg[i].Kp;
-      low_cmd_.motor_cmd()[i].kd()  = cmd_msg[i].Kd;
-      low_cmd_.motor_cmd()[i].tau() = cmd_msg[i].tor;
+      const auto motor_index = Spec::motorIndex(i);
+      const float direction = Spec::motorDirection(i);
+      low_cmd_.motor_cmd()[motor_index].q()   = direction * cmd_msg[i].q;
+      low_cmd_.motor_cmd()[motor_index].dq()  = direction * cmd_msg[i].dq;
+      low_cmd_.motor_cmd()[motor_index].kp()  = cmd_msg[i].Kp;
+      low_cmd_.motor_cmd()[motor_index].kd()  = cmd_msg[i].Kd;
+      low_cmd_.motor_cmd()[motor_index].tau() = direction * cmd_msg[i].tor;
     }
   }
 
@@ -76,9 +94,11 @@ class UnitreeQuadrupedApi : public RobotApi {
     low_state_.imu.gyroscope     = msg->imu_state().gyroscope();
 
     for (std::size_t i{}; i < getDoF(); ++i) {
-      low_state_.motor_state[i].q   = msg->motor_state()[i].q();
-      low_state_.motor_state[i].dq  = msg->motor_state()[i].dq();
-      low_state_.motor_state[i].tor = msg->motor_state()[i].tau_est();
+      const auto motor_index = Spec::motorIndex(i);
+      const float direction = Spec::motorDirection(i);
+      low_state_.motor_state[i].q   = direction * msg->motor_state()[motor_index].q();
+      low_state_.motor_state[i].dq  = direction * msg->motor_state()[motor_index].dq();
+      low_state_.motor_state[i].tor = direction * msg->motor_state()[motor_index].tau_est();
     }
     for (std::size_t i{}; i < getNumLegs(); ++i) {
       low_state_.foot_force[i] = msg->foot_force()[i];
@@ -93,22 +113,42 @@ class UnitreeQuadrupedApi : public RobotApi {
   std::mutex mutex_;
 };
 
-struct Go2Spec {
+struct IdentityQuadrupedMapping {
+  static std::size_t motorIndex(std::size_t joint_index) { return joint_index; }
+  static float motorDirection(std::size_t) { return 1.0F; }
+};
+
+struct Go2Spec : IdentityQuadrupedMapping {
   static const char *robotName() { return "go2"; }
   static constexpr uint8_t kMotorServoMode = kGo2MotorServoMode;
 };
 
-struct Go2WSpec {
+struct Go2WSpec : IdentityQuadrupedMapping {
   static const char *robotName() { return "go2w"; }
   static constexpr uint8_t kMotorServoMode = kGo2MotorServoMode;
 };
 
-struct B2Spec {
+struct B2Spec : IdentityQuadrupedMapping {
   static const char *robotName() { return "b2"; }
   static constexpr uint8_t kMotorServoMode = kB2MotorServoMode;
 };
 
-struct AliengoSimSpec {
+struct B2WSpec {
+  static const char *robotName() { return "b2w"; }
+  static constexpr uint8_t kMotorServoMode = kB2MotorServoMode;
+  // Unitree B2W low-level DDS order: 12 leg joints followed by FR/FL/RR/RL wheels.
+  // Keep this table explicit so a hardware revision can be adapted without
+  // changing the policy's canonical joint order.
+  static constexpr std::array<std::size_t, 16> kMotorIndices{
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+  static constexpr std::array<float, 16> kMotorDirections{
+      1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F,
+      1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F};
+  static std::size_t motorIndex(std::size_t joint_index) { return kMotorIndices.at(joint_index); }
+  static float motorDirection(std::size_t joint_index) { return kMotorDirections.at(joint_index); }
+};
+
+struct AliengoSimSpec : IdentityQuadrupedMapping {
   static const char *robotName() { return "aliengo_sim"; }
   static constexpr uint8_t kMotorServoMode = kGo2MotorServoMode;
 };
@@ -116,6 +156,7 @@ struct AliengoSimSpec {
 using Go2Api = UnitreeQuadrupedApi<Go2Spec>;
 using Go2WApi = UnitreeQuadrupedApi<Go2WSpec>;
 using B2Api = UnitreeQuadrupedApi<B2Spec>;
+using B2WApi = UnitreeQuadrupedApi<B2WSpec>;
 using AliengoSimApi = UnitreeQuadrupedApi<AliengoSimSpec>;
 }  // namespace stepit
 

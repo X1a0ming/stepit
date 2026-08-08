@@ -1,16 +1,9 @@
 stepit_declare_plugin(NAME policy_neuro_ros2 DEPENDS
+    nnrt_onnxruntime
     policy_neuro
     ros2_base
 )
 set(missing_packages "")
-find_package(grid_map_msgs QUIET)
-if (NOT grid_map_msgs_FOUND)
-  list(APPEND missing_packages grid_map_msgs)
-endif ()
-find_package(grid_map_ros QUIET)
-if (NOT grid_map_ros_FOUND)
-  list(APPEND missing_packages grid_map_ros)
-endif ()
 find_package(nav_msgs QUIET)
 if (NOT nav_msgs_FOUND)
   list(APPEND missing_packages nav_msgs)

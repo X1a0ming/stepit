@@ -1,0 +1,25 @@
+name: @POLICY_NAME@
+control_freq: 50
+tailored: b2w
+trusted: false
+actuator:
+  type: hybrid
+  Kp: [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 0, 0, 0, 0]
+  Kd: [3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3, 3, 3, 3]
+  bias: [0, 0.4, -1.3, 0, 0.4, -1.3, 0, 0.4, -1.3, 0, 0.4, -1.3, 0, 0, 0, 0]
+  scale: [0.125, 0.25, 0.25, 0.125, 0.25, 0.25, 0.125, 0.25, 0.25, 0.125, 0.25, 0.25, 5, 5, 5, 5]
+  mode: [position, position, position, position, position, position, position, position, position, position, position, position, velocity, velocity, velocity, velocity]
+  command_lower: [-0.87, -0.94, -2.82, -0.87, -0.94, -2.82, -0.87, -0.94, -2.82, -0.87, -0.94, -2.82, -50, -50, -50, -50]
+  command_upper: [0.87, 4.69, -0.43, 0.87, 4.69, -0.43, 0.87, 4.69, -0.43, 0.87, 4.69, -0.43, 50, 50, 50, 50]
+action_mean: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+modules:
+  - joint_graph_path_subscriber@field_subscriber
+  - proprioceptor
+  - joint_graph_observation
+  - actor
+  - joint_graph_motor_action@field_ops
+  - joint_graph_action_reordering@action_reordering
+publish_fields: [joint_graph_cmd_vel]
+run:
+  variant: @VARIANT@
+  profile: b2w_motor

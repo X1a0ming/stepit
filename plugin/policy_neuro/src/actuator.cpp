@@ -1,5 +1,7 @@
 #include <stepit/policy_neuro/actuator.h>
 
+#include <limits>
+
 namespace stepit {
 namespace neuro_policy {
 Actuator::Actuator(const NeuroPolicySpec &policy_spec, const ModuleSpec &module_spec)
@@ -13,6 +15,8 @@ Actuator::Actuator(const NeuroPolicySpec &policy_spec, const ModuleSpec &module_
   bias_.setZero(policy_spec.dof);
   kp_.setZero(policy_spec.dof);
   kd_.setZero(policy_spec.dof);
+  command_lower_.setConstant(policy_spec.dof, -std::numeric_limits<float>::infinity());
+  command_upper_.setConstant(policy_spec.dof, std::numeric_limits<float>::infinity());
 
   if (config_["parameters"].hasValue()) {
     config_["parameters"].assertSequence(policy_spec.dof);
@@ -31,6 +35,26 @@ Actuator::Actuator(const NeuroPolicySpec &policy_spec, const ModuleSpec &module_
     config_[config_.getDefinedKey({"stiffness", "kp", "Kp"})].to(kp_, true);
     config_[config_.getDefinedKey({"damping", "kd", "Kd"})].to(kd_, true);
   }
+
+  config_["command_lower"].to(command_lower_, true);
+  config_["command_upper"].to(command_upper_, true);
+  config_.require((command_lower_ <= command_upper_).all(),
+                  "Every actuator command_lower value must be <= command_upper.");
+}
+
+ArrXf Actuator::scaleAndClamp(cArrXf action) {
+  STEPIT_ASSERT(action.size() == scale_.size(), "Actuator expected action size {}, got {}.", scale_.size(),
+                action.size());
+  STEPIT_ASSERT(action.allFinite(), "Actuator action must contain only finite values.");
+  ArrXf command = scale_.cwiseProduct(action) + bias_;
+  ArrXf limited = command.cwiseMax(command_lower_).cwiseMin(command_upper_);
+  if (not limited.isApprox(command)) {
+    ++command_limit_count_;
+    if (command_limit_count_ == 1 or command_limit_count_ % 500 == 0) {
+      STEPIT_WARN("Actuator command limit applied {} time(s).", command_limit_count_);
+    }
+  }
+  return limited;
 }
 
 PositionActuator::PositionActuator(const NeuroPolicySpec &policy_spec, const ModuleSpec &module_spec)
@@ -57,7 +81,7 @@ bool PositionActuator::update(const LowState &low_state, ControlRequests &reques
 }
 
 void PositionActuator::setLowCmd(LowCmd &cmd, cArrXf action) {
-  target_joint_pos_ = scale_.cwiseProduct(action) + bias_;
+  target_joint_pos_ = scaleAndClamp(action);
   for (Eigen::Index i{}; i < target_joint_pos_.size(); ++i) {
     cmd[i].q   = target_joint_pos_[i];
     cmd[i].dq  = 0.0F;
@@ -84,7 +108,7 @@ bool VelocityActuator::update(const LowState &low_state, ControlRequests &reques
 }
 
 void VelocityActuator::setLowCmd(LowCmd &cmd, cArrXf action) {
-  target_joint_vel_ = scale_.cwiseProduct(action) + bias_;
+  target_joint_vel_ = scaleAndClamp(action);
   for (Eigen::Index i{}; i < target_joint_vel_.size(); ++i) {
     cmd[i].q   = 0.0F;
     cmd[i].dq  = target_joint_vel_[i];
@@ -111,7 +135,7 @@ bool TorqueActuator::update(const LowState &low_state, ControlRequests &requests
 }
 
 void TorqueActuator::setLowCmd(LowCmd &cmd, cArrXf action) {
-  target_joint_tor_ = scale_.cwiseProduct(action) + bias_;
+  target_joint_tor_ = scaleAndClamp(action);
   for (Eigen::Index i{}; i < target_joint_tor_.size(); ++i) {
     cmd[i].q   = 0.0F;
     cmd[i].dq  = 0.0F;
@@ -159,7 +183,7 @@ bool HybridActuator::update(const LowState &low_state, ControlRequests &requests
 }
 
 void HybridActuator::setLowCmd(LowCmd &cmd, cArrXf action) {
-  joint_command_ = scale_.cwiseProduct(action) + bias_;
+  joint_command_ = scaleAndClamp(action);
   for (Eigen::Index i{}; i < joint_command_.size(); ++i) {
     cmd[i].q   = 0.0F;
     cmd[i].dq  = 0.0F;

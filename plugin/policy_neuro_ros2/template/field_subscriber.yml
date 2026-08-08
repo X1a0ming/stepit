@@ -3,6 +3,12 @@
 example_field_0:                # String, field name
   topic: "/example_field_0"     # String, ROS2 topic to subscribe
   size: 3                       # Int, field dimension
+  expected_layout:              # [Optional] Strict Float32MultiArray layout contract
+    labels: [x, y]
+    sizes: [17, 11]
+    strides: [187, 11]
+    data_offset: 0
+  bootstrap_zero: false         # [Optional] Start with zeros until the configured timeout expires
   timeout_threshold: 0.0        # [Optional] Float, seconds before data is considered stale
                                 #   If a field is not received within the timeout, the policy will exit.
                                 #   If not specified or not larger than 0, no timeout is applied.

@@ -7,6 +7,9 @@
 A flexible framework for connecting legged robots, input devices, and control algorithms, especially learning-based ones.
 Out-of-the-box policies and configurations can be found in [stepit_zoo](https://github.com/chengruiz/stepit_zoo).
 
+V12B/V12C 在 Jetson Orin 上部署 Go2、B2W 或直接输出 ROS 2 `cmd_vel`，见
+[deploy/orin/README.md](deploy/orin/README.md)。
+
 > [!CAUTION]
 > **Disclaimer: User acknowledges that all risks and consequences arising from using this code shall be solely borne by the user, the author assumes no liability for any direct or indirect damages, and proper safety measures must be implemented prior to operation.**
 

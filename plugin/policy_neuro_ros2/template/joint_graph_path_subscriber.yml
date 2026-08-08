@@ -1,0 +1,14 @@
+path_points_body:
+  topic: /stepit/path_points_body
+  size: 40
+  expected_layout:
+    labels: [point, xy]
+    sizes: [20, 2]
+    strides: [40, 2]
+    data_offset: 0
+  timeout_threshold: 0.25
+  bootstrap_zero: true
+  qos:
+    depth: 1
+    reliability: best_effort
+    durability: volatile

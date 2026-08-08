@@ -27,7 +27,7 @@ sudo apt install ros-${ROS_DISTRO}-cv-bridge ros-${ROS_DISTRO}-grid-map-ros
 - `cmd_vel_subscriber`: subscribes to a ROS2 topic of one of the following types and provides command velocity fields (`cmd_vel`) with `linear.x`, `linear.y`, and `angular.z` components:
     - `geometry_msgs/msg/Twist`,
     - `geometry_msgs/msg/TwistStamped`.
-- `field_subscriber`: subscribes to configured `std_msgs/msg/Float32MultiArray` topics and provides the named fields declared in its config map.
+- `field_subscriber`: subscribes to configured `std_msgs/msg/Float32MultiArray` topics and provides the named fields declared in its config map. Optional `expected_layout` labels, sizes, strides and data offset are checked exactly. `bootstrap_zero: true` permits a bounded zero-input startup; the normal timeout still stops a missing or stale stream.
 - `heightmap_subscriber`: subscribes to an elevation map topic of type `grid_map_msgs/msg/GridMap` and a pose topic of one of the following types, sample elevation and uncertainty values around the robot, and provide corresponding fields (`heightmap` / `heightmap_uncertainty`):
     - `geometry_msgs/msg/PoseStamped`,
     - `geometry_msgs/msg/PoseWithCovarianceStamped`,

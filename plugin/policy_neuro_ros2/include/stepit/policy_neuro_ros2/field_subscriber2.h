@@ -23,6 +23,12 @@ class FieldSubscriber2 : public Module {
     std::size_t size;
     rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr subscriber;
     float timeout_threshold{};
+    bool validate_layout{false};
+    std::vector<std::string> expected_layout_labels;
+    std::vector<std::size_t> expected_layout_sizes;
+    std::vector<std::size_t> expected_layout_strides;
+    std::size_t expected_data_offset{};
+    bool bootstrap_zero{false};
 
     bool received{false};
     rclcpp::Time stamp{0, 0, RCL_ROS_TIME};

@@ -20,8 +20,12 @@ class Actuator : public Module,
   virtual void setLowCmd(LowCmd &cmd, cArrXf action) = 0;
 
  protected:
+  ArrXf scaleAndClamp(cArrXf action);
+
   ArrXf scale_, bias_;
   ArrXf kp_, kd_;
+  ArrXf command_lower_, command_upper_;
+  std::size_t command_limit_count_{};
 };
 
 class PositionActuator : public Actuator {

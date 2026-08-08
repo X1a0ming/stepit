@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "deployment_schema": "joint_graph_v5_current_cmd_cascade_no_height",
+  "variant": "v12b",
+  "source_run": "logs/cusrl/b2w_hier_vel_traj_track_joint_graph_v12b_3robot_topology_moe4/2026-07-29-18-03-18_v12b_reward_rebalance_r11k_teacher10k_s42_e512_20260729",
+  "checkpoint": "ckpt/ckpt_50000.pt",
+  "checkpoint_sha256": "2d4ecc707d7abc81e1177ebe06f9df55efdb86d2be329eeca182e89c91ecb683",
+  "actor_sha256": "ac4301797eddd2a13789f0ebe3f3cb4df091a9395b59a52ef8d1e01b2b84b571",
+  "observation_dim": 458,
+  "action_dim": 32,
+  "control_rate_hz": 50,
+  "recurrent": true,
+  "recurrent_state": {"memory_in__level2__hidden": [1, 128]},
+  "supported_profiles": ["go2_motor", "b2w_motor", "cmd_vel"]
+}

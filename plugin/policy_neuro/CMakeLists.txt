@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.23)
 project(stepit_plugin_policy_neuro)
 
 stepit_add_plugin(${PROJECT_NAME})
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 target_sources(${PROJECT_NAME}
     PRIVATE
       src/action_source.cpp
@@ -10,6 +11,7 @@ target_sources(${PROJECT_NAME}
       src/cmd_vel_source.cpp
       src/field_ops.cpp
       src/heightmap_source.cpp
+      src/joint_graph_interface.cpp
       src/joint_reordering.cpp
       src/module.cpp
       src/neuro_module.cpp
@@ -28,6 +30,7 @@ target_sources(${PROJECT_NAME}
         include/stepit/policy_neuro/cmd_vel_source.h
         include/stepit/policy_neuro/field_ops.h
         include/stepit/policy_neuro/heightmap_source.h
+        include/stepit/policy_neuro/joint_graph_interface.h
         include/stepit/policy_neuro/joint_reordering.h
         include/stepit/policy_neuro/module.h
         include/stepit/policy_neuro/neuro_module.h

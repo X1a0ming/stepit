@@ -42,6 +42,8 @@ actuator:            # [Optional] actuator configuration
     1.0, 2.0, 2.0,
     1.0, 2.0, 2.0,
   ]
+  command_lower: -10.0  #   [Optional] Union[Float, List[Float]], lower bound after scale and bias
+  command_upper: 10.0   #   [Optional] Union[Float, List[Float]], upper bound after scale and bias
   mode:              #   List[Literal["position", "velocity", "torque"]]
     - position       #   mode of each actuator, required for "hybrid" type
     - velocity

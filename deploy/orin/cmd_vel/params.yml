@@ -1,0 +1,15 @@
+joint_graph_cmd_vel:
+  ros__parameters:
+    imu_topic: /stepit/imu
+    path_topic: /stepit/path_points_body
+    cmd_vel_topic: /stepit/cmd_vel
+    control_rate_hz: 50.0
+    imu_timeout_s: 0.10
+    path_timeout_s: 0.25
+    ang_vel_scale: 0.25
+    path_scale: 1.0
+    previous_cmd_scale: 1.0
+    robot_id: 8
+    require_path_layout: true
+    cmd_vel_lower: [-2.0, -2.0, -2.0]
+    cmd_vel_upper: [2.0, 2.0, 2.0]

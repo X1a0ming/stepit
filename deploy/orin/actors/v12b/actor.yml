@@ -1,0 +1,11 @@
+model_path: actor.onnx
+nnrt_factory: onnxruntime
+assert_all_finite: true
+input_fields:
+  observation: {name: joint_graph_observation, size: 458}
+output_fields:
+  action:
+    - {name: joint_graph_cmd_vel, size: 3}
+    - {name: joint_graph_motor, size: 29}
+recurrent_params:
+  - [memory_in__level2__hidden, memory_out__level2__hidden]

@@ -1,0 +1,9 @@
+{
+  "profile": "b2w_motor",
+  "robot": "b2w",
+  "robot_id": 2,
+  "dof": 16,
+  "control_modes": ["position", "position", "position", "position", "position", "position", "position", "position", "position", "position", "position", "position", "velocity", "velocity", "velocity", "velocity"],
+  "actor_motor_slice": [3, 19],
+  "dds_motor_indices": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "deployment_schema": "joint_graph_v5_current_cmd_cascade_no_height",
+  "variant": "v12c",
+  "source_run": "logs/cusrl/b2w_hier_vel_traj_track_joint_graph_v12c_3robot_single_stage_moe4/2026-08-01-17-34-44_v12c_single_stage_moe4_scratch_s42_e512_20260801",
+  "checkpoint": "ckpt/ckpt_35400.pt",
+  "checkpoint_sha256": "77be091e3638cd5568bd60a45f46fb602729fbc32fe852c7653121b336d7fdb8",
+  "actor_sha256": "6293e0e56fcbb070c512a330f05d145bec3dbe20ed6d7c5c891361043531c0b9",
+  "observation_dim": 458,
+  "action_dim": 32,
+  "control_rate_hz": 50,
+  "recurrent": false,
+  "supported_profiles": ["go2_motor", "b2w_motor", "cmd_vel"]
+}

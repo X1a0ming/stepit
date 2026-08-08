@@ -1,0 +1,6 @@
+operators:
+  - type: slice
+    source: joint_graph_motor
+    target: action
+    start: 0
+    end: 16
